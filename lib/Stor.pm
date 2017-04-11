@@ -6,15 +6,14 @@ our $VERSION = '0.1.0';
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
 use Path::Tiny;
-use List::Util qw(shuffle min);
+use List::Util qw(shuffle min max);
 use List::MoreUtils qw(first_index);
-use Digest::SHA256;
+use Digest::SHA qw(sha256_hex);
 
 use feature 'signatures';
 no warnings 'experimental::signatures';
 
 has 'storage_pairs';
-has 'digest_sha256' => sub { Digest::SHA256->new() };
 
 sub about ($self, $c) {
     $c->render(status => 200, text => "This is " . __PACKAGE__ . " $VERSION");
@@ -31,13 +30,14 @@ sub get ($self, $c) {
         $self->_stream_found_file($c, $path);
     }
     catch {
-        $c->render(status => 404, text => $_);
+        $c->app->log->debug("$@");
+        $c->render(status => 404, text => $@);
     }
 }
 
 sub post ($self, $c) {
     my $sha  = $c->param('sha');
-    my $file = $c->req->upload('file');
+    my $file = $c->req->content->asset;
 
     if ($sha !~ /^[A-Fa-f0-9]{64}$/) {
         $c->render(status => 412, text => "Givenl hash '$sha' isn't sha256");
@@ -49,7 +49,7 @@ sub post ($self, $c) {
         return
     }
 
-    my $content_sha = $self->digest_sha256->hexhash($file->slurp());
+    my $content_sha = sha256_hex($file->slurp());
     if ($sha ne $content_sha) {
         $c->render(status => 412, text =>
             "Content sha256 $content_sha doesn't match given sha256 $sha");
@@ -58,7 +58,7 @@ sub post ($self, $c) {
 
     my $storage_pair = $self->pick_storage_pair_for_file($file);
     my $paths = $self->save_file($file, $sha, $storage_pair);
-    $self->render(status => 201, json => $paths);
+    $c->render(status => 201, json => $paths);
 }
 
 sub pick_storage_pair_for_file ($self, $file) {
@@ -95,14 +95,19 @@ sub get_storages_free_space($self) {
     return \@free_space
 }
 
+sub get_storage_free_space($self, $storage) {
+    return int(qx(df --output=avail $storage | tail -n 1))
+}
+
 sub save_file ($self, $file, $sha, $storage_pair) {
     my @paths = map { path($_, $self->_sha_to_filepath($sha)) } @$storage_pair;
+    $_->parent->mkpath() for @paths;
     my $first_path = shift @paths;
     $file->move_to($first_path);
     $first_path->copy($_) for @paths;
 }
 
-sub _lookup ($self, $sha, $return_all_paths) {
+sub _lookup ($self, $sha, $return_all_paths = '') {
     my @paths;
     for my $storage ($self->_get_shuffled_storages()) {
         my $file_path = path($storage, $self->_sha_to_filepath($sha));

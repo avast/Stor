@@ -1,0 +1,6 @@
+{
+  "storage_pairs": [
+      [ "/tmp/stor1", "/tmp/stor2"],
+      [ "/tmp/stor3", "/tmp/stor4"]
+  ],
+}
