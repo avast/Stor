@@ -3,7 +3,7 @@ requires 'Mojolicious';
 requires 'Path::Tiny';
 requires 'Syntax::Keyword::Try';
 requires 'List::MoreUtils';
-requires 'Digest::SHA256';
+requires 'Digest::SHA';
 requires 'Cpanel::JSON::XS';
 
 on 'test' => sub {
