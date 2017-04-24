@@ -56,9 +56,19 @@ sub post ($self, $c) {
         return
     }
 
-    my $storage_pair = $self->pick_storage_pair_for_file($file);
-    my $paths = $self->save_file($file, $sha, $storage_pair);
-    $c->render(status => 201, json => $paths);
+    try {
+        my $storage_pair = $self->pick_storage_pair_for_file($file);
+        my $paths = $self->save_file($file, $sha, $storage_pair);
+        $c->render(status => 201, json => $paths);
+    }
+    catch {
+        if ($@ =~ /Not enough space on storages/) {
+            $c->render(status => 507, text => $@);
+            return
+        }
+        $c->render(status => 500, text => $@);
+        return
+    }
 }
 
 sub pick_storage_pair_for_file ($self, $file) {
@@ -257,6 +267,10 @@ Bad authentication
 =head4 412 Precondition Failed
 
 content mismatch - sha256 of content not equal SHA
+
+=head4 507 Insufficient Storage
+
+There is not enough space on storage to save the file.
 
 Headers:
 

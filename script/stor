@@ -15,7 +15,7 @@ get  '/'     => sub { $stor->about(@_) };
 get  '/:sha' => sub { $stor->get(@_) };
 post '/:sha' => sub { $stor->post(@_) };
 
-app->secrets(['sedibubaknadubukteryvlesestojistrasidetibububuapaksesamboji']);
+app->secrets([$cfg->{secret}]);
 app->start;
 
 

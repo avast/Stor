@@ -84,6 +84,10 @@ Bad authentication
 
 content mismatch - sha256 of content not equal SHA
 
+#### 507 Insufficient Storage
+
+There is not enough space on storage to save the file.
+
 Headers:
 
     Content-Sha-256 - sha256 of content
