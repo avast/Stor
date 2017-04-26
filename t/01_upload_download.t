@@ -53,6 +53,6 @@ if ($pid) { # parent
 }
 else {      # child
     setpgrp(0, 0); #process group (to enable killing whole process tree)
-    exec "CONFIG_FILE=$cfg_file PERL5LIB=\$PWD/lib script/stor daemon";
+    exec "CONFIG_FILE=$cfg_file PERL5LIB=\$PWD/lib:\$PERL5LIB script/stor daemon";
     die 'Exec failed';
 }
