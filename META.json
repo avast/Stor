@@ -50,7 +50,7 @@
             "Mojolicious" : "0",
             "Path::Tiny" : "0",
             "Syntax::Keyword::Try" : "0",
-            "perl" : "5.024"
+            "perl" : "5.022"
          }
       },
       "test" : {

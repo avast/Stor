@@ -1,4 +1,4 @@
-requires 'perl', '5.024';
+requires 'perl', '5.022';
 requires 'Mojolicious';
 requires 'Path::Tiny';
 requires 'Syntax::Keyword::Try';
