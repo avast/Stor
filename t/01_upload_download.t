@@ -41,7 +41,7 @@ if ($pid) { # parent
 
         my $tx = $ua->post("http://localhost:3000/$sha" => {} => $content);
         is($tx->res->code, 201, 'file created');
-        my $received = $ua->get("http://localhost:3000/$sha")->result->body;
+        my $received = $ua->get("http://localhost:3000/$sha")->res->body;
         is($received, $content, 'received what we had sent');
     }
     catch {
