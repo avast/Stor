@@ -4,7 +4,7 @@
       "Miroslav Tynovsky <tynovsky@avast.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v3.0.4, CPAN::Meta::Converter version 2.150005",
+   "generated_by" : "Minilla/v3.0.10, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "perl_5"
    ],
@@ -66,6 +66,6 @@
          "url" : "git://git.int.avast.com/perl-modules/Stor.git"
       }
    },
-   "version" : "0.1.0",
+   "version" : "0.2.0",
    "x_serialization_backend" : "JSON::PP version 2.27300_01"
 }

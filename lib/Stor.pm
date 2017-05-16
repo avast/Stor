@@ -1,6 +1,6 @@
 package Stor;
 
-our $VERSION = '0.1.0';
+our $VERSION = '0.2.0';
 
 
 use Mojo::Base -base;
@@ -17,6 +17,20 @@ has 'storage_pairs';
 
 sub about ($self, $c) {
     $c->render(status => 200, text => "This is " . __PACKAGE__ . " $VERSION");
+}
+
+sub status ($self, $c) {
+    for my $storage ($self->_get_shuffled_storages()) {
+        die "Storage $storage isn't a directory"
+            if !path($storage)->is_dir();
+
+        my $mountpoint = qx(df --output=target $storage | tail -n 1);
+        chomp $mountpoint;
+        die "Storage $storage is not mounted"
+            if $mountpoint eq '/';
+    }
+
+    $c->render(status => 200, text => 'OK');
 }
 
 sub get ($self, $c) {
