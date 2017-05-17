@@ -55,6 +55,9 @@
       },
       "test" : {
          "requires" : {
+            "Mock::Quick" : "0",
+            "Test::Exception" : "0",
+            "Test::Mock::Cmd" : "0.7",
             "Test::More" : "0.98"
          }
       }
