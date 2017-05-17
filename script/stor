@@ -11,9 +11,10 @@ use Stor;
 my $cfg = load_config();
 my $stor = Stor->new(storage_pairs => $cfg->{storage_pairs});
 
-get  '/'     => sub { $stor->about(@_) };
-get  '/:sha' => sub { $stor->get(@_) };
-post '/:sha' => sub { $stor->post(@_) };
+get  '/'       => sub { $stor->about(@_)  };
+get  '/status' => sub { $stor->status(@_) };
+get  '/:sha'   => sub { $stor->get(@_)    };
+post '/:sha'   => sub { $stor->post(@_)   };
 
 app->secrets([$cfg->{secret}]);
 app->start;
