@@ -1,6 +1,6 @@
 package Stor;
 
-our $VERSION = '0.2.0';
+our $VERSION = '0.3.0';
 
 
 use Mojo::Base -base;
@@ -45,9 +45,19 @@ sub get ($self, $c) {
         my $path = $paths->[0];
         $c->res->headers->content_length(-s $path);
         $self->_stream_found_file($c, $path);
+        $self->statsite->increment('success.get.ok.count');
     }
     catch {
         $c->app->log->debug("$@");
+        if ($@ =~ /not found/) {
+            $self->statsite->increment('error.get.not_found.count');
+        }
+        elsif ($@ =~ /isn't SHA256/) {
+            $self->statsite->increment('error.get.malformed_sha.count');
+        }
+        else {
+            $self->statsite->increment('error.get.unknown.count');
+        }
         $c->render(status => 404, text => $@);
     }
 }
@@ -57,17 +67,20 @@ sub post ($self, $c) {
     my $file = $c->req->content->asset;
 
     if ($sha !~ /^[A-Fa-f0-9]{64}$/) {
-        $c->render(status => 412, text => "Givenl hash '$sha' isn't sha256");
+        $self->statsite->increment('error.post.malformed_sha.count');
+        $c->render(status => 412, text => "Given hash '$sha' isn't sha256");
         return
     }
 
     if (my @paths = @{$self->_lookup($sha, 1)}) {
+        $self->statsite->increment('success.post.duplicate.count');
         $c->render(status => 200, json => \@paths);
         return
     }
 
     my $content_sha = sha256_hex($file->slurp());
     if ($sha ne $content_sha) {
+        $self->statsite->increment('error.post.bad_sha.count');
         $c->render(status => 412, text =>
             "Content sha256 $content_sha doesn't match given sha256 $sha");
         return
@@ -76,13 +89,16 @@ sub post ($self, $c) {
     try {
         my $storage_pair = $self->pick_storage_pair_for_file($file);
         my $paths = $self->save_file($file, $sha, $storage_pair);
+        $self->statsite->increment('success.post.write.count');
         $c->render(status => 201, json => $paths);
     }
     catch {
         if ($@ =~ /Not enough space on storages/) {
+            $self->statsite->increment('error.post.no_space.count');
             $c->render(status => 507, text => $@);
             return
         }
+        $self->statsite->increment('error.post.unknown.count');
         $c->render(status => 500, text => $@);
         return
     }
