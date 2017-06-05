@@ -17,7 +17,10 @@ my $storage_pairs = [
     [ Path::Tiny->tempdir(), Path::Tiny->tempdir(), ],
 ];
 
-my $stor = Stor->new(storage_pairs => $storage_pairs);
+my $stor = Stor->new(
+    storage_pairs => $storage_pairs,
+    statsite => qobj( increment => 1 ),
+);
 
 my $c = qobj( render => 1);
 

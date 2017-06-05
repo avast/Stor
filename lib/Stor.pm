@@ -14,6 +14,7 @@ use feature 'signatures';
 no warnings 'experimental::signatures';
 
 has 'storage_pairs';
+has 'statsite';
 
 sub about ($self, $c) {
     $c->render(status => 200, text => "This is " . __PACKAGE__ . " $VERSION");
@@ -29,6 +30,8 @@ sub status ($self, $c) {
         die "Storage $storage is not mounted"
             if $mountpoint eq '/';
     }
+
+    $self->statsite->increment('healthcheck.count');
 
     $c->render(status => 200, text => 'OK');
 }

@@ -48,6 +48,7 @@
             "Digest::SHA" : "0",
             "List::MoreUtils" : "0",
             "Mojolicious" : "0",
+            "Net::Statsite::Client" : "0",
             "Path::Tiny" : "0",
             "Syntax::Keyword::Try" : "0",
             "perl" : "5.022"
