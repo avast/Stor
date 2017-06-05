@@ -5,11 +5,16 @@ use warnings;
 use Mojolicious::Lite;
 use Cpanel::JSON::XS;
 use Path::Tiny;
+use Net::Statsite::Client;
 
 use Stor;
 
 my $cfg = load_config();
-my $stor = Stor->new(storage_pairs => $cfg->{storage_pairs});
+my $statsite = Net::Statsite::Client->new(%{ $cfg->{statsite} });
+my $stor = Stor->new(
+    storage_pairs => $cfg->{storage_pairs},
+    statsite      => $statsite,
+);
 
 get  '/'       => sub { $stor->about(@_)  };
 get  '/status' => sub { $stor->status(@_) };

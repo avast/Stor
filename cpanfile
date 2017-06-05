@@ -5,6 +5,7 @@ requires 'Syntax::Keyword::Try';
 requires 'List::MoreUtils';
 requires 'Digest::SHA';
 requires 'Cpanel::JSON::XS';
+requires 'Net::Statsite::Client';
 
 on 'test' => sub {
     requires 'Test::More', '0.98';
