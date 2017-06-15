@@ -1,6 +1,6 @@
 package Stor;
 
-our $VERSION = '0.3.0';
+our $VERSION = '0.3.1';
 
 
 use Mojo::Base -base;
@@ -9,6 +9,8 @@ use Path::Tiny;
 use List::Util qw(shuffle min max);
 use List::MoreUtils qw(first_index);
 use Digest::SHA qw(sha256_hex);
+use failures qw(stor);
+use Safe::Isa;
 
 use feature 'signatures';
 no warnings 'experimental::signatures';
@@ -39,9 +41,17 @@ sub status ($self, $c) {
 sub get ($self, $c) {
     my $sha = $c->param('sha');
     try {
-        die "Given hash '$sha' isn't SHA256\n" if $sha !~ /^[A-Fa-f0-9]{64}$/;
+        failure::stor->throw(
+            msg     => "Given hash '$sha' isn't SHA256",
+            payload => { statsite_key => 'error.get.malformed_sha.count' },
+        ) if $sha !~ /^[A-Fa-f0-9]{64}$/;
+
         my $paths = $self->_lookup($sha);
-        die "File '$sha' not found" if !@$paths;
+        failure::stor->throw(
+            msg     => "File '$sha' not found",
+            payload => { statsite_key => 'error.get.not_found.count' },
+        ) if !@$paths;
+
         my $path = $paths->[0];
         $c->res->headers->content_length(-s $path);
         $self->_stream_found_file($c, $path);
@@ -49,16 +59,13 @@ sub get ($self, $c) {
     }
     catch {
         $c->app->log->debug("$@");
-        if ($@ =~ /not found/) {
-            $self->statsite->increment('error.get.not_found.count');
-        }
-        elsif ($@ =~ /isn't SHA256/) {
-            $self->statsite->increment('error.get.malformed_sha.count');
+        if ($@->$_isa('failure::stor')) {
+            $self->statsite->increment($@->payload->{statsite_key});
         }
         else {
             $self->statsite->increment('error.get.unknown.count');
         }
-        $c->render(status => 404, text => $@);
+        $c->render(status => 404, text => "$@");
     }
 }
 
@@ -93,13 +100,13 @@ sub post ($self, $c) {
         $c->render(status => 201, json => $paths);
     }
     catch {
-        if ($@ =~ /Not enough space on storages/) {
-            $self->statsite->increment('error.post.no_space.count');
-            $c->render(status => 507, text => $@);
+        if ($@->$_isa('failure::stor')) {
+            $self->statsite->increment($@->payload->{statsite_key});
+            $c->render(status => 507, text => "$@");
             return
         }
         $self->statsite->increment('error.post.unknown.count');
-        $c->render(status => 500, text => $@);
+        $c->render(status => 500, text => "$@");
         return
     }
 }
@@ -107,7 +114,12 @@ sub post ($self, $c) {
 sub pick_storage_pair_for_file ($self, $file) {
     my @free_space = map {$_ - $file->size()}
                         @{ $self->get_storages_free_space() };
-    die 'Not enough space on storages' if !grep {$_ > 0} @free_space;
+
+    failure::stor->throw(
+        msg => 'Not enough space on storages',
+        payload => { statsite_key => 'error.post.no_space.count' },
+    )
+        if !grep {$_ > 0} @free_space;
 
     my $index = 0;
     if (!grep {$_ > 1_000_000_000} @free_space) {

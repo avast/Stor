@@ -6,6 +6,8 @@ requires 'List::MoreUtils';
 requires 'Digest::SHA';
 requires 'Cpanel::JSON::XS';
 requires 'Net::Statsite::Client';
+requires 'failures';
+requires 'Safe::Isa';
 
 on 'test' => sub {
     requires 'Test::More', '0.98';
