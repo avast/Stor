@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 2;
+use Test::More tests => 3;
 use Mojo::UserAgent;
 use Digest::SHA qw(sha256_hex);
 use Path::Tiny;
@@ -43,6 +43,8 @@ if ($pid) { # parent
         is($tx->res->code, 201, 'file created');
         my $received = $ua->get("http://localhost:3000/$sha")->res->body;
         is($received, $content, 'received what we had sent');
+        $tx = $ua->get("http://localhost:3000/" . ('0' x 64));
+        is($tx->res->code, 404, 'zero hash not found');
     }
     catch {
         fail("an error caught: $@");

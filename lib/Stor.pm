@@ -1,6 +1,6 @@
 package Stor;
 
-our $VERSION = '0.3.1';
+our $VERSION = '0.3.2';
 
 
 use Mojo::Base -base;
@@ -41,16 +41,16 @@ sub status ($self, $c) {
 sub get ($self, $c) {
     my $sha = $c->param('sha');
     try {
-        failure::stor->throw(
+        failure::stor->throw({
             msg     => "Given hash '$sha' isn't SHA256",
             payload => { statsite_key => 'error.get.malformed_sha.count' },
-        ) if $sha !~ /^[A-Fa-f0-9]{64}$/;
+        }) if $sha !~ /^[A-Fa-f0-9]{64}$/;
 
         my $paths = $self->_lookup($sha);
-        failure::stor->throw(
+        failure::stor->throw({
             msg     => "File '$sha' not found",
             payload => { statsite_key => 'error.get.not_found.count' },
-        ) if !@$paths;
+        }) if !@$paths;
 
         my $path = $paths->[0];
         $c->res->headers->content_length(-s $path);
@@ -115,10 +115,10 @@ sub pick_storage_pair_for_file ($self, $file) {
     my @free_space = map {$_ - $file->size()}
                         @{ $self->get_storages_free_space() };
 
-    failure::stor->throw(
+    failure::stor->throw({
         msg => 'Not enough space on storages',
         payload => { statsite_key => 'error.post.no_space.count' },
-    )
+    })
         if !grep {$_ > 0} @free_space;
 
     my $index = 0;

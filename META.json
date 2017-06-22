@@ -72,6 +72,6 @@
          "url" : "git://git.int.avast.com/perl-modules/Stor.git"
       }
    },
-   "version" : "0.3.0",
+   "version" : "0.3.2",
    "x_serialization_backend" : "JSON::PP version 2.27300_01"
 }
