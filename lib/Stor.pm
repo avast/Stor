@@ -1,6 +1,6 @@
 package Stor;
 
-our $VERSION = '0.3.2';
+our $VERSION = '0.3.3';
 
 
 use Mojo::Base -base;

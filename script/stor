@@ -19,7 +19,7 @@ my $stor = Stor->new(
 get  '/'       => sub { $stor->about(@_)  };
 get  '/status' => sub { $stor->status(@_) };
 get  '/:sha'   => sub { $stor->get(@_)    };
-post '/:sha'   => sub { $stor->post(@_)   };
+#post '/:sha'   => sub { $stor->post(@_)   };
 
 app->secrets([$cfg->{secret}]);
 app->start;
