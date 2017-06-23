@@ -2,5 +2,9 @@ Revision history for Perl extension Stor
 
 {{$NEXT}}
 
+0.4.0
+    - add basic authorization for POST
+
+0.1.0
     - original version
 

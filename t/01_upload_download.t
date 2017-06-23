@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 3;
+use Test::More tests => 4;
 use Mojo::UserAgent;
 use Digest::SHA qw(sha256_hex);
 use Path::Tiny;
@@ -22,7 +22,8 @@ my $cfg = {
         [ $storages[0]->stringify(), $storages[1]->stringify(), ],
         [ $storages[2]->stringify(), $storages[3]->stringify(), ],
     ],
-    secret => 'test secret',
+    secret     => 'test secret',
+    basic_auth => 'user:pass',
 };
 
 my $cfg_file = Path::Tiny->tempfile();
@@ -40,6 +41,9 @@ if ($pid) { # parent
         my $sha = sha256_hex($content);
 
         my $tx = $ua->post("http://localhost:3000/$sha" => {} => $content);
+        is($tx->res->code, 401, 'basic authorization');
+
+        $tx = $ua->post("http://user:pass\@localhost:3000/$sha" => {} => $content);
         is($tx->res->code, 201, 'file created');
         my $received = $ua->get("http://localhost:3000/$sha")->res->body;
         is($received, $content, 'received what we had sent');

@@ -1,12 +1,13 @@
 package Stor;
+use v5.20;
 
-our $VERSION = '0.3.3';
-
+our $VERSION = '0.4.0';
 
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
 use Path::Tiny;
 use List::Util qw(shuffle min max);
+use Mojo::Util qw(secure_compare);
 use List::MoreUtils qw(first_index);
 use Digest::SHA qw(sha256_hex);
 use failures qw(stor);
@@ -17,6 +18,7 @@ no warnings 'experimental::signatures';
 
 has 'storage_pairs';
 has 'statsite';
+has 'basic_auth';
 
 sub about ($self, $c) {
     $c->render(status => 200, text => "This is " . __PACKAGE__ . " $VERSION");
@@ -71,11 +73,17 @@ sub get ($self, $c) {
 
 sub post ($self, $c) {
     my $sha  = $c->param('sha');
-    my $file = $c->req->content->asset;
 
     if ($sha !~ /^[A-Fa-f0-9]{64}$/) {
         $self->statsite->increment('error.post.malformed_sha.count');
         $c->render(status => 412, text => "Given hash '$sha' isn't sha256");
+        return
+    }
+
+    if (!$c->req->url->to_abs->userinfo || !secure_compare($c->req->url->to_abs->userinfo, $self->basic_auth)) {
+        # Require authentication
+        $c->res->headers->www_authenticate('Basic');
+        $c->render(text => 'Authentication required!', status => 401);
         return
     }
 
@@ -85,6 +93,7 @@ sub post ($self, $c) {
         return
     }
 
+    my $file = $c->req->content->asset;
     my $content_sha = sha256_hex($file->slurp());
     if ($sha ne $content_sha) {
         $self->statsite->increment('error.post.bad_sha.count');
