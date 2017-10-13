@@ -8,6 +8,7 @@ requires 'Cpanel::JSON::XS';
 requires 'Net::Statsite::Client';
 requires 'failures';
 requires 'Safe::Isa';
+requires 'Try::Tiny::Retry';
 
 on 'test' => sub {
     requires 'Test::More', '0.98';
