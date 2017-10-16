@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.4.0';
+our $VERSION = '0.4.1';
 
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
@@ -12,6 +12,7 @@ use List::MoreUtils qw(first_index);
 use Digest::SHA qw(sha256_hex);
 use failures qw(stor);
 use Safe::Isa;
+use Try::Tiny::Retry;
 
 use feature 'signatures';
 no warnings 'experimental::signatures';
@@ -194,7 +195,13 @@ sub _sha_to_filepath($self, $sha) {
 
 sub _stream_found_file($self, $c, $path) {
 
-    my $fh = $path->openr_raw();
+    my $fh;
+    retry {
+        $fh = $path->openr_raw();
+    }
+    catch {
+        die $_;
+    };
 
     my $drain; $drain = sub {
         my ($c) = @_;
