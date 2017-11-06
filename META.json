@@ -68,13 +68,19 @@
    },
    "release_status" : "unstable",
    "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/avast/Stor/issues"
+      },
+      "homepage" : "https://github.com/avast/Stor",
       "repository" : {
          "type" : "git",
-         "url" : "git://git.int.avast.com/perl-modules/Stor.git"
+         "url" : "git://github.com/avast/Stor.git",
+         "web" : "https://github.com/avast/Stor"
       }
    },
-   "version" : "0.4.1",
+   "version" : "0.4.2",
    "x_contributors" : [
+      "Jan Seidl <janseidl@volny.cz>",
       "Jan Seidl <seidl@avast.com>"
    ],
    "x_serialization_backend" : "JSON::PP version 2.94"
