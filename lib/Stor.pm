@@ -63,12 +63,19 @@ sub get ($self, $c) {
     catch {
         $c->app->log->debug("$@");
         if ($@->$_isa('failure::stor::filenotfound')) {
-            $self->statsite->increment($@->payload->{statsite_key});
-            return $c->render(status => 404, text => "$@");
+            $c->render(status => 404, text => "$@");
         }
-
-        $self->statsite->increment('error.get.unknown.count');
-        return $c->render(status => 500, text => "$@");
+        else {
+            $c->render(status => 500, text => "$@");
+        }
+    }
+    finally {
+        if ($@->$_isa('failure::stor')) {
+            $self->statsite->increment($@->payload->{statsite_key});
+        }
+        else {
+            $self->statsite->increment('error.get.unknown.count');
+        }
     }
 }
 
