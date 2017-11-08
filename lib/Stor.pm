@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.4.1';
+our $VERSION = '0.4.2';
 
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
@@ -10,7 +10,7 @@ use List::Util qw(shuffle min max);
 use Mojo::Util qw(secure_compare);
 use List::MoreUtils qw(first_index);
 use Digest::SHA qw(sha256_hex);
-use failures qw(stor);
+use failures qw(stor stor::filenotfound);
 use Safe::Isa;
 use Try::Tiny::Retry;
 
@@ -44,13 +44,13 @@ sub status ($self, $c) {
 sub get ($self, $c) {
     my $sha = $c->param('sha');
     try {
-        failure::stor->throw({
+        failure::stor::filenotfound->throw({
             msg     => "Given hash '$sha' isn't SHA256",
             payload => { statsite_key => 'error.get.malformed_sha.count' },
         }) if $sha !~ /^[A-Fa-f0-9]{64}$/;
 
         my $paths = $self->_lookup($sha);
-        failure::stor->throw({
+        failure::stor::filenotfound->throw({
             msg     => "File '$sha' not found",
             payload => { statsite_key => 'error.get.not_found.count' },
         }) if !@$paths;
@@ -62,13 +62,20 @@ sub get ($self, $c) {
     }
     catch {
         $c->app->log->debug("$@");
+        if ($@->$_isa('failure::stor::filenotfound')) {
+            $c->render(status => 404, text => "$@");
+        }
+        else {
+            $c->render(status => 500, text => "$@");
+        }
+    }
+    finally {
         if ($@->$_isa('failure::stor')) {
             $self->statsite->increment($@->payload->{statsite_key});
         }
         else {
             $self->statsite->increment('error.get.unknown.count');
         }
-        $c->render(status => 404, text => "$@");
     }
 }
 
