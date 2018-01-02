@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.4.2';
+our $VERSION = '0.4.3';
 
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
@@ -43,6 +43,7 @@ sub status ($self, $c) {
 
 sub get ($self, $c) {
     my $sha = $c->param('sha');
+    my $tm_start = time;
     try {
         failure::stor::filenotfound->throw({
             msg     => "Given hash '$sha' isn't SHA256",
@@ -56,9 +57,12 @@ sub get ($self, $c) {
         }) if !@$paths;
 
         my $path = $paths->[0];
-        $c->res->headers->content_length(-s $path);
+        my $size = -s $path;
+        $c->res->headers->content_length($size);
         $self->_stream_found_file($c, $path);
         $self->statsite->increment('success.get.ok.count');
+        $self->statsite->timing('success.get.ok.time', time - $tm_start * 1000);
+        $self->statsite->update('success.get.ok.size', $size);
     }
     catch {
         $c->app->log->debug("$@");
@@ -72,9 +76,6 @@ sub get ($self, $c) {
     finally {
         if ($@->$_isa('failure::stor')) {
             $self->statsite->increment($@->payload->{statsite_key});
-        }
-        else {
-            $self->statsite->increment('error.get.unknown.count');
         }
     }
 }
@@ -202,14 +203,7 @@ sub _sha_to_filepath($self, $sha) {
 
 sub _stream_found_file($self, $c, $path) {
 
-    my $fh;
-    retry {
-        $fh = $path->openr_raw();
-    }
-    catch {
-        die $_;
-    };
-
+    my $fh = $path->openr_raw();
     my $drain; $drain = sub {
         my ($c) = @_;
 
