@@ -2,6 +2,9 @@ Revision history for Perl extension Stor
 
 {{$NEXT}}
 
+0.4.4
+   - lookup.attempt.[$attempt].count metric added
+
 0.4.3
     - remove retry - clients retry is better (not blocked servers process)
     - success.get.ok.[time/size] metrics added

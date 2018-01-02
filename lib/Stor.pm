@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.4.3';
+our $VERSION = '0.4.4';
 
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
@@ -182,9 +182,12 @@ sub save_file ($self, $file, $sha, $storage_pair) {
 
 sub _lookup ($self, $sha, $return_all_paths = '') {
     my @paths;
+    my $attempt = 0;
     for my $storage ($self->_get_shuffled_storages()) {
+        $attempt++;
         my $file_path = path($storage, $self->_sha_to_filepath($sha));
         if ($file_path->is_file) {
+            $self->statsite->increment("lookup.attempt.$attempt.count");
             push @paths, $file_path;
             return \@paths if !$return_all_paths
         }
