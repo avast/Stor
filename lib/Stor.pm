@@ -63,7 +63,7 @@ sub get ($self, $c) {
         $c->res->headers->content_length($size);
         $self->_stream_found_file($c, $path);
         $self->statsite->increment('success.get.ok.count');
-        $self->statsite->timing('success.get.ok.time', time - $tm_start * 1000);
+        $self->statsite->timing('success.get.ok.time', (time - $tm_start) / 1000);
         $self->statsite->update('success.get.ok.size', $size);
     }
     catch {
@@ -188,7 +188,7 @@ sub _lookup ($self, $sha, $return_all_paths = '') {
     my $tm_start = time;
 
     scope_guard {
-        $self->statsite->timing('lookup.time', time - $tm_start * 1000);
+        $self->statsite->timing('lookup.time', (time - $tm_start) / 1000);
         $self->statsite->increment("lookup.attempt.$attempt.count");
     };
 
