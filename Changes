@@ -2,6 +2,11 @@ Revision history for Perl extension Stor
 
 {{$NEXT}}
 
+0.4.3
+    - remove retry - clients retry is better (not blocked servers process)
+    - success.get.ok.[time/size] metrics added
+    - remove error.get.unknown.count metric (success and error mismatch)
+
 0.4.0
     - add basic authorization for POST
 
