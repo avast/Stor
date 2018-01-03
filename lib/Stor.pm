@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.4.3';
+our $VERSION = '0.4.4';
 
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
@@ -13,6 +13,8 @@ use Digest::SHA qw(sha256_hex);
 use failures qw(stor stor::filenotfound);
 use Safe::Isa;
 use Try::Tiny::Retry;
+use Guard qw(scope_guard);
+use Time::HiRes qw(time);
 
 use feature 'signatures';
 no warnings 'experimental::signatures';
@@ -182,7 +184,16 @@ sub save_file ($self, $file, $sha, $storage_pair) {
 
 sub _lookup ($self, $sha, $return_all_paths = '') {
     my @paths;
+    my $attempt = 0;
+    my $tm_start = time;
+
+    scope_guard {
+        $self->statsite->timing('lookup.time', time - $tm_start * 1000);
+        $self->statsite->increment("lookup.attempt.$attempt.count");
+    };
+
     for my $storage ($self->_get_shuffled_storages()) {
+        $attempt++;
         my $file_path = path($storage, $self->_sha_to_filepath($sha));
         if ($file_path->is_file) {
             push @paths, $file_path;

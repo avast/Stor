@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use Mojolicious::Lite;
-use Cpanel::JSON::XS;
+use Mojo::JSON qw(decode_json);
 use Path::Tiny;
 use Net::Statsite::Client;
 

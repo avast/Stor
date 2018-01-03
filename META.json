@@ -44,15 +44,14 @@
       },
       "runtime" : {
          "requires" : {
-            "Cpanel::JSON::XS" : "0",
             "Digest::SHA" : "0",
+            "Guard" : "1.023",
             "List::MoreUtils" : "0",
             "Mojolicious" : "0",
             "Net::Statsite::Client" : "0",
             "Path::Tiny" : "0",
             "Safe::Isa" : "0",
             "Syntax::Keyword::Try" : "0",
-            "Try::Tiny::Retry" : "0",
             "failures" : "0",
             "perl" : "5.022"
          }
@@ -78,10 +77,11 @@
          "web" : "https://github.com/avast/Stor"
       }
    },
-   "version" : "0.4.2",
+   "version" : "0.4.4",
    "x_contributors" : [
       "Jan Seidl <janseidl@volny.cz>",
-      "Jan Seidl <seidl@avast.com>"
+      "Jan Seidl <seidl@avast.com>",
+      "Rudolf Plíva <pliva@avast.com>"
    ],
    "x_serialization_backend" : "JSON::PP version 2.94"
 }

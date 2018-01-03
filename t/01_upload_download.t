@@ -8,7 +8,7 @@ use Mojo::UserAgent;
 use Digest::SHA qw(sha256_hex);
 use Path::Tiny;
 use Syntax::Keyword::Try;
-use Cpanel::JSON::XS;
+use Mojo::JSON qw(encode_json);
 
 my @storages = (
     Path::Tiny->tempdir(),

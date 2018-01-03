@@ -4,11 +4,10 @@ requires 'Path::Tiny';
 requires 'Syntax::Keyword::Try';
 requires 'List::MoreUtils';
 requires 'Digest::SHA';
-requires 'Cpanel::JSON::XS';
 requires 'Net::Statsite::Client';
 requires 'failures';
 requires 'Safe::Isa';
-requires 'Try::Tiny::Retry';
+requires 'Guard', '1.023';
 
 on 'test' => sub {
     requires 'Test::More', '0.98';
