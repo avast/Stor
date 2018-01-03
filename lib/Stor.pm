@@ -183,11 +183,13 @@ sub save_file ($self, $file, $sha, $storage_pair) {
 sub _lookup ($self, $sha, $return_all_paths = '') {
     my @paths;
     my $attempt = 0;
+    my $tm_start = time;
     for my $storage ($self->_get_shuffled_storages()) {
         $attempt++;
         my $file_path = path($storage, $self->_sha_to_filepath($sha));
         if ($file_path->is_file) {
             $self->statsite->increment("lookup.attempt.$attempt.count");
+            $self->statsite->timing('lookup.time', time - $tm_start * 1000);
             push @paths, $file_path;
             return \@paths if !$return_all_paths
         }
