@@ -12,7 +12,6 @@ use List::MoreUtils qw(first_index);
 use Digest::SHA qw(sha256_hex);
 use failures qw(stor stor::filenotfound);
 use Safe::Isa;
-use Try::Tiny::Retry;
 use Guard qw(scope_guard);
 use Time::HiRes qw(time);
 
