@@ -57,7 +57,7 @@ sub get ($self, $c) {
         }) if !@$paths;
 
         my $path = $paths->[0];
-        $c->res->headers->content_length(-s $size);
+        $c->res->headers->content_length(-s $path);
         $self->_stream_found_file($c, $path);
         $self->statsite->increment('success.get.ok.count');
     }
@@ -220,7 +220,7 @@ sub _stream_found_file($self, $c, $path) {
             $drain = undef;
         }
 
-        $c->write($chunk, $drain)
+        $c->write($chunk, $drain);
         $self->statsite->update('success.get.ok.size', $size);
         $self->statsite->timing('success.get.ok.time', (time - $tm_start) / 1000);
     };
