@@ -67,6 +67,7 @@ sub get ($self, $c) {
             $c->render(status => 404, text => "$@");
         }
         else {
+            $self->statsite->increment('error.get.500.count');
             $c->render(status => 500, text => "$@");
         }
     }
@@ -208,12 +209,12 @@ sub _sha_to_filepath($self, $sha) {
 
 
 sub _stream_found_file($self, $c, $path) {
-    my $tm_start = time;
     my $fh = $path->openr_raw();
     my $drain; $drain = sub {
         my ($c) = @_;
 
         my $chunk;
+        my $tm_chunk = time;
         my $size = read($fh, $chunk, 1024 * 1024);
         if ($size == 0) {
             close($fh);
@@ -222,7 +223,7 @@ sub _stream_found_file($self, $c, $path) {
 
         $c->write($chunk, $drain);
         $self->statsite->update('success.get.ok.size', $size);
-        $self->statsite->timing('success.get.ok.time', (time - $tm_start) / 1000);
+        $self->statsite->timing('success.get.ok.time', (time - $tm_chunk) / 1000);
     };
     $c->$drain;
 }
