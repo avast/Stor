@@ -44,7 +44,6 @@ sub status ($self, $c) {
 
 sub get ($self, $c) {
     my $sha = $c->param('sha');
-    my $tm_start = time;
     try {
         failure::stor::filenotfound->throw({
             msg     => "Given hash '$sha' isn't SHA256",
@@ -58,12 +57,9 @@ sub get ($self, $c) {
         }) if !@$paths;
 
         my $path = $paths->[0];
-        my $size = -s $path;
-        $c->res->headers->content_length($size);
+        $c->res->headers->content_length(-s $path);
         $self->_stream_found_file($c, $path);
         $self->statsite->increment('success.get.ok.count');
-        $self->statsite->timing('success.get.ok.time', (time - $tm_start) / 1000);
-        $self->statsite->update('success.get.ok.size', $size);
     }
     catch {
         $c->app->log->debug("$@");
@@ -71,6 +67,7 @@ sub get ($self, $c) {
             $c->render(status => 404, text => "$@");
         }
         else {
+            $self->statsite->increment('error.get.500.count');
             $c->render(status => 500, text => "$@");
         }
     }
@@ -212,18 +209,21 @@ sub _sha_to_filepath($self, $sha) {
 
 
 sub _stream_found_file($self, $c, $path) {
-
     my $fh = $path->openr_raw();
     my $drain; $drain = sub {
         my ($c) = @_;
 
         my $chunk;
-        if (read($fh, $chunk, 1024 * 1024) == 0) {
+        my $tm_chunk = time;
+        my $size = read($fh, $chunk, 1024 * 1024);
+        if ($size == 0) {
             close($fh);
             $drain = undef;
         }
 
-        $c->write($chunk, $drain)
+        $c->write($chunk, $drain);
+        $self->statsite->update('success.get.ok.size', $size);
+        $self->statsite->timing('success.get.ok.time', (time - $tm_chunk) / 1000);
     };
     $c->$drain;
 }
