@@ -17,6 +17,16 @@ my $stor = Stor->new(
     basic_auth    => $cfg->{basic_auth},
 );
 
+app->plugin(
+    CHI => {
+        default => {
+            driver   => 'Memcached::Fast',
+            servers  => $cfg->{memcached_servers},
+            l1_cache => { driver => 'Memory', global => 1, max_size => 1024 * 1024 }
+        }
+    }
+);
+
 get  '/'       => sub { $stor->about(@_)  };
 get  '/status' => sub { $stor->status(@_) };
 get  '/:sha'   => sub { $stor->get(@_)    };

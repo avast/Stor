@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.4.4';
+our $VERSION = '0.5.0';
 
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
@@ -51,13 +51,26 @@ sub get ($self, $c) {
             payload => { statsite_key => 'error.get.malformed_sha.count' },
         }) if $sha !~ /^[A-Fa-f0-9]{64}$/;
 
-        my $paths = $self->_lookup($sha);
-        failure::stor::filenotfound->throw({
-            msg     => "File '$sha' not found",
-            payload => { statsite_key => 'error.get.not_found.count' },
-        }) if !@$paths;
+        my $tm_cache = time;
+        my $path     = $c->chi->get($sha);
+        $self->statsite->timing('cache.time', (time - $tm_cache) / 1000);
+        if ($path) {
+            $self->statsite->increment('cache.hit');
+        }
+        else {
+            $self->statsite->increment('cache.miss');
+            my $paths = $self->_lookup($sha);
+            failure::stor::filenotfound->throw(
+                {
+                    msg     => "File '$sha' not found",
+                    payload => { statsite_key => 'error.get.not_found.count' },
+                }
+            ) if !@$paths;
 
-        my $path = $paths->[0];
+            $path = $paths->[0];
+            $c->chi->set($sha => $path);
+        }
+
         my $size = -s $path;
         $c->res->headers->content_length($size);
         $self->_stream_found_file($c, $path);

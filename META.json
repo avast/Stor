@@ -44,10 +44,13 @@
       },
       "runtime" : {
          "requires" : {
+            "CHI::Driver::Memcached" : "0.16",
+            "Cache::Memcached::Fast" : "0.25",
             "Digest::SHA" : "0",
             "Guard" : "1.023",
             "List::MoreUtils" : "0",
             "Mojolicious" : "0",
+            "Mojolicious::Plugin::CHI" : "0.09",
             "Net::Statsite::Client" : "0",
             "Path::Tiny" : "0",
             "Safe::Isa" : "0",
@@ -77,7 +80,7 @@
          "web" : "https://github.com/avast/Stor"
       }
    },
-   "version" : "0.4.4",
+   "version" : "0.5.0",
    "x_contributors" : [
       "Jan Seidl <janseidl@volny.cz>",
       "Jan Seidl <seidl@avast.com>",
