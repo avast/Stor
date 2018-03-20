@@ -11,6 +11,7 @@ requires 'Guard', '1.023';
 requires 'Mojolicious::Plugin::CHI', '0.09';
 requires 'CHI::Driver::Memcached', '0.16';
 requires 'Cache::Memcached::Fast', '0.25';
+requires 'HTTP::Date', '6.02';
 
 
 on 'test' => sub {

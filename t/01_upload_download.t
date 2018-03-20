@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 use Mojo::UserAgent;
 use Digest::SHA qw(sha256_hex);
 use Path::Tiny;
@@ -45,8 +45,9 @@ if ($pid) { # parent
 
         $tx = $ua->post("http://user:pass\@localhost:3000/$sha" => {} => $content);
         is($tx->res->code, 201, 'file created');
-        my $received = $ua->get("http://localhost:3000/$sha")->res->body;
-        is($received, $content, 'received what we had sent');
+        my $res = $ua->get("http://localhost:3000/$sha")->res;
+        is($res->body, $content, 'received what we had sent');
+        like($res->headers->last_modified, qr/\w+, \d+ \w+ \d+ \d+:\d+:\d+ GMT/, 'Last-Modified header exists');
         $tx = $ua->get("http://localhost:3000/" . ('0' x 64));
         is($tx->res->code, 404, 'zero hash not found');
     }
