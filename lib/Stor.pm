@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.5.0';
+our $VERSION = '0.6.0';
 
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
@@ -14,6 +14,7 @@ use failures qw(stor stor::filenotfound);
 use Safe::Isa;
 use Guard qw(scope_guard);
 use Time::HiRes qw(time);
+use HTTP::Date;
 
 use feature 'signatures';
 no warnings 'experimental::signatures';
@@ -70,8 +71,9 @@ sub get ($self, $c) {
             $c->chi->set($sha => $path);
         }
 
-        my $size = -s $path;
-        $c->res->headers->content_length($size);
+        my $path_stat = $path->stat;
+        $c->res->headers->content_length($path_stat->size);
+        $c->res->headers->last_modified(time2str($path_stat->mtime));
 
         $self->_stream_found_file($c, $path);
         $self->statsite->increment('success.get.ok.count');
