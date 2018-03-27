@@ -1,12 +1,12 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.6.0';
+our $VERSION = '0.6.1';
 
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
 use Path::Tiny;
-use List::Util qw(shuffle min max);
+use List::Util qw(shuffle min max sum);
 use Mojo::Util qw(secure_compare);
 use List::MoreUtils qw(first_index);
 use Digest::SHA qw(sha256_hex);
