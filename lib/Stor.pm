@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.6.2';
+our $VERSION = '0.6.3';
 
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
@@ -276,7 +276,7 @@ Stor - Save/retrieve a file to/from primary storage
     curl http://stor-url/946a5ec1d49e0d7825489b1258476fdd66a3e9370cc406c2981a4dc3cd7f4e4f
 
     # store a file
-    curl -X POST --data @my_file http://stor-url/946a5ec1d49e0d7825489b1258476fdd66a3e9370cc406c2981a4dc3cd7f4e4f
+    curl -X POST --data-binary @my_file http://user:pass@stor-url/946a5ec1d49e0d7825489b1258476fdd66a3e9370cc406c2981a4dc3cd7f4e4f
 
 =head1 DESCRIPTION
 
