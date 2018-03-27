@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.6.1';
+our $VERSION = '0.6.2';
 
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
@@ -188,11 +188,13 @@ sub get_storage_free_space($self, $storage) {
 }
 
 sub save_file ($self, $file, $sha, $storage_pair) {
-    my @paths = map { path($_, $self->_sha_to_filepath($sha)) } @$storage_pair;
+    my @all_paths = map { path($_, $self->_sha_to_filepath($sha)) } @$storage_pair;
+    my @paths = @all_paths;
     $_->parent->mkpath() for @paths;
     my $first_path = shift @paths;
     $file->move_to($first_path);
     $first_path->copy($_) for @paths;
+    return \@all_paths;
 }
 
 sub _lookup ($self, $sha, $return_all_paths = '') {
