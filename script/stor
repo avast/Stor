@@ -19,7 +19,7 @@ my $s3 = Net::Amazon::S3->new(
         host                  => $cfg->{hcp_credentials}{host},
         secure                => 0,
         retry                 => 0,
-        timeout               => 5
+        timeout               => 30
     }
 );
 my $bucket = $s3->bucket('samples');
