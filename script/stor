@@ -6,15 +6,29 @@ use Mojolicious::Lite;
 use Mojo::JSON qw(decode_json);
 use Path::Tiny;
 use Net::Statsite::Client;
+use Net::Amazon::S3;
 
 use Stor;
 
 my $cfg = load_config();
 my $statsite = Net::Statsite::Client->new(%{ $cfg->{statsite} });
+my $s3 = Net::Amazon::S3->new(
+    {
+        aws_access_key_id     => $cfg->{hcp_credentials}{access_key},
+        aws_secret_access_key => $cfg->{hcp_credentials}{secret_key},
+        host                  => $cfg->{hcp_credentials}{host},
+        secure                => 0,
+        retry                 => 0,
+        timeout               => 5
+    }
+);
+my $bucket = $s3->bucket('samples');
+
 my $stor = Stor->new(
     storage_pairs => $cfg->{storage_pairs},
     statsite      => $statsite,
     basic_auth    => $cfg->{basic_auth},
+    bucket        => $bucket,
 );
 
 app->plugin(

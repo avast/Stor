@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.6.3';
+our $VERSION = '0.7.0';
 
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
@@ -22,6 +22,7 @@ no warnings 'experimental::signatures';
 has 'storage_pairs';
 has 'statsite';
 has 'basic_auth';
+has 'bucket';
 
 sub about ($self, $c) {
     $c->render(status => 200, text => "This is " . __PACKAGE__ . " $VERSION");
@@ -43,6 +44,58 @@ sub status ($self, $c) {
     $c->render(status => 200, text => 'OK');
 }
 
+sub get_from_old_storages ($self, $c, $sha) {
+    my $tm_cache = time;
+    my $path     = $c->chi->get($sha);
+    $self->statsite->timing('cache.time', (time - $tm_cache) / 1000);
+    if ($path) {
+        $self->statsite->increment('cache.hit');
+    }
+    else {
+        $self->statsite->increment('cache.miss');
+        my $paths = $self->_lookup($sha);
+        failure::stor::filenotfound->throw(
+            {
+                msg     => "File '$sha' not found",
+                payload => { statsite_key => 'error.get.not_found_old.count' },
+            }
+        ) if !@$paths;
+
+        $path = $paths->[0];
+        $c->chi->set($sha => $path);
+    }
+
+    my $path_stat = $path->stat;
+    $c->res->headers->content_length($path_stat->size);
+    $c->res->headers->last_modified(time2str($path_stat->mtime));
+
+    $self->_stream_found_file($c, $path);
+    $self->statsite->increment('success.get.ok_old.count');
+}
+
+sub get_from_hcp ($self, $c, $sha) {
+    my $hcp_key = $self->_sha_to_filepath($sha);
+
+    my $resp = $self->bucket->get_key($hcp_key, 'HEAD');
+    if (!$resp) {
+        $self->statsite->increment('error.get.not_found_hcp.count');
+        return 0;
+    }
+
+    $c->res->headers->content_length($resp->{content_length});
+    $c->res->headers->last_modified($resp->{'last-modified'});
+
+    my $count;
+    $self->bucket->get_key_filename(
+        $hcp_key, 'GET',
+        sub {
+            my ($chunk,) = @_;
+            $c->write($chunk);
+        }
+    );
+    $self->statsite->increment('success.get.ok_hcp.count');
+}
+
 sub get ($self, $c) {
     my $sha = $c->param('sha');
     try {
@@ -51,32 +104,10 @@ sub get ($self, $c) {
             payload => { statsite_key => 'error.get.malformed_sha.count' },
         }) if $sha !~ /^[A-Fa-f0-9]{64}$/;
 
-        my $tm_cache = time;
-        my $path     = $c->chi->get($sha);
-        $self->statsite->timing('cache.time', (time - $tm_cache) / 1000);
-        if ($path) {
-            $self->statsite->increment('cache.hit');
+        if (!$self->get_from_hcp($c, $sha)) {
+            $self->get_from_old_storages($c, $sha);
+            #when you remove calling this function, add failure::stor::filenotfound
         }
-        else {
-            $self->statsite->increment('cache.miss');
-            my $paths = $self->_lookup($sha);
-            failure::stor::filenotfound->throw(
-                {
-                    msg     => "File '$sha' not found",
-                    payload => { statsite_key => 'error.get.not_found.count' },
-                }
-            ) if !@$paths;
-
-            $path = $paths->[0];
-            $c->chi->set($sha => $path);
-        }
-
-        my $path_stat = $path->stat;
-        $c->res->headers->content_length($path_stat->size);
-        $c->res->headers->last_modified(time2str($path_stat->mtime));
-
-        $self->_stream_found_file($c, $path);
-        $self->statsite->increment('success.get.ok.count');
     }
     catch {
         $c->app->log->debug("$@");
@@ -188,7 +219,7 @@ sub get_storage_free_space($self, $storage) {
 }
 
 sub save_file ($self, $file, $sha, $storage_pair) {
-    my @all_paths = map { path($_, $self->_sha_to_filepath($sha)) } @$storage_pair;
+    my @all_paths = map { path($_, $self->_path_with_dat($sha)) } @$storage_pair;
     my @paths = @all_paths;
     $_->parent->mkpath() for @paths;
     my $first_path = shift @paths;
@@ -209,7 +240,7 @@ sub _lookup ($self, $sha, $return_all_paths = '') {
 
     for my $storage ($self->_get_shuffled_storages()) {
         $attempt++;
-        my $file_path = path($storage, $self->_sha_to_filepath($sha));
+        my $file_path = path($storage, $self->_path_with_dat($sha));
         if ($file_path->is_file) {
             push @paths, $file_path;
             return \@paths if !$return_all_paths
@@ -219,8 +250,12 @@ sub _lookup ($self, $sha, $return_all_paths = '') {
     return \@paths
 }
 
+sub _path_with_dat($self, $sha) {
+    return uc($self->_sha_to_filepath($sha)) . '.dat';
+}
+
 sub _sha_to_filepath($self, $sha) {
-    my $filename = uc($sha) . '.dat';
+    my $filename = lc($sha);
     my @subdir = unpack 'A2A2A2', $filename;
 
     return join '/', @subdir, $filename
