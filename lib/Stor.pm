@@ -3,7 +3,7 @@ use v5.20;
 
 our $VERSION = '0.7.0';
 
-use Mojo::Base -base;
+use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
 use Path::Tiny;
 use List::Util qw(shuffle min max sum);
@@ -15,14 +15,25 @@ use Safe::Isa;
 use Guard qw(scope_guard);
 use Time::HiRes qw(time);
 use HTTP::Date;
-
-use feature 'signatures';
-no warnings 'experimental::signatures';
+use Net::Amazon::S3;
 
 has 'storage_pairs';
 has 'statsite';
 has 'basic_auth';
-has 'bucket';
+has 'hcp_credentials';
+has 'bucket' => sub ($self) {
+    my $s3 = Net::Amazon::S3->new(
+        {
+            aws_access_key_id     => $self->hcp_credentials->{access_key},
+            aws_secret_access_key => $self->hcp_credentials->{secret_key},
+            host                  => $self->hcp_credentials->{host},
+            secure                => 0,
+            retry                 => 0,
+            timeout               => 30
+        }
+    );
+    return $s3->bucket('samples');
+};
 
 sub about ($self, $c) {
     $c->render(status => 200, text => "This is " . __PACKAGE__ . " $VERSION");
@@ -94,6 +105,7 @@ sub get_from_hcp ($self, $c, $sha) {
         }
     );
     $self->statsite->increment('success.get.ok_hcp.count');
+    return 1;
 }
 
 sub get ($self, $c) {
@@ -104,7 +116,8 @@ sub get ($self, $c) {
             payload => { statsite_key => 'error.get.malformed_sha.count' },
         }) if $sha !~ /^[A-Fa-f0-9]{64}$/;
 
-        if (!$self->get_from_hcp($c, $sha)) {
+
+        if ($ENV{TEST} || !$self->get_from_hcp($c, $sha)) {
             $self->get_from_old_storages($c, $sha);
             #when you remove calling this function, add failure::stor::filenotfound
         }
