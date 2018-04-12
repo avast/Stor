@@ -13,9 +13,9 @@ my $cfg = load_config();
 my $statsite = Net::Statsite::Client->new(%{ $cfg->{statsite} });
 
 my $stor = Stor->new(
-    storage_pairs => $cfg->{storage_pairs},
-    statsite      => $statsite,
-    basic_auth    => $cfg->{basic_auth},
+    storage_pairs   => $cfg->{storage_pairs},
+    statsite        => $statsite,
+    basic_auth      => $cfg->{basic_auth},
     hcp_credentials => $cfg->{hcp_credentials},
 );
 
