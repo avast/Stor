@@ -21,6 +21,9 @@ has 'storage_pairs';
 has 'statsite';
 has 'basic_auth';
 has 'hcp_credentials';
+has 'use_get_from_hcp' => sub {
+    return 0;
+};
 has 'bucket' => sub ($self) {
     my $s3 = Net::Amazon::S3->new(
         {
@@ -117,7 +120,7 @@ sub get ($self, $c) {
         }) if $sha !~ /^[A-Fa-f0-9]{64}$/;
 
 
-        if ($ENV{TEST} || !$self->get_from_hcp($c, $sha)) {
+        if (!$self->use_get_from_hcp || $self->get_from_hcp($c, $sha)) {
             $self->get_from_old_storages($c, $sha);
             #when you remove calling this function, add failure::stor::filenotfound
         }

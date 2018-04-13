@@ -28,7 +28,8 @@ my $cfg = {
         access_key => 'some_key',
         secret_key => 'another_key',
         host       => 'host',
-    }
+    },
+    get_from_hcp   => 0,
 };
 
 my $cfg_file = Path::Tiny->tempfile();
@@ -65,6 +66,6 @@ if ($pid) { # parent
 }
 else {      # child
     setpgrp(0, 0); #process group (to enable killing whole process tree)
-    exec "TEST=1 CONFIG_FILE=$cfg_file PERL5LIB=\$PWD/lib:\$PERL5LIB script/stor daemon";
+    exec "CONFIG_FILE=$cfg_file PERL5LIB=\$PWD/lib:\$PERL5LIB script/stor daemon";
     die 'Exec failed';
 }
