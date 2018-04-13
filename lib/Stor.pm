@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.6.3';
+our $VERSION = '0.6.4';
 
 use Mojo::Base -base;
 use Syntax::Keyword::Try;
@@ -119,7 +119,7 @@ sub post ($self, $c) {
 
     my $file = $c->req->content->asset;
     my $content_sha = sha256_hex($file->slurp());
-    if ($sha ne $content_sha) {
+    if (lc($sha) ne lc($content_sha)) {
         $self->statsite->increment('error.post.bad_sha.count');
         $c->render(status => 412, text =>
             "Content sha256 $content_sha doesn't match given sha256 $sha");
