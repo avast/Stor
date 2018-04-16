@@ -22,8 +22,14 @@ my $cfg = {
         [ $storages[0]->stringify(), $storages[1]->stringify(), ],
         [ $storages[2]->stringify(), $storages[3]->stringify(), ],
     ],
-    secret     => 'test secret',
-    basic_auth => 'user:pass',
+    secret          => 'test secret',
+    basic_auth      => 'user:pass',
+    hcp_credentials => {
+        access_key => 'some_key',
+        secret_key => 'another_key',
+        host       => 'host',
+    },
+    get_from_hcp   => 0,
 };
 
 my $cfg_file = Path::Tiny->tempfile();

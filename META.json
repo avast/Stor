@@ -52,6 +52,7 @@
             "List::MoreUtils" : "0",
             "Mojolicious" : "0",
             "Mojolicious::Plugin::CHI" : "0.09",
+            "Net::Amazon::S3" : "0",
             "Net::Statsite::Client" : "0",
             "Path::Tiny" : "0",
             "Safe::Isa" : "0",
@@ -81,7 +82,8 @@
          "web" : "https://github.com/avast/Stor"
       }
    },
-   "version" : "0.6.4",
+   "version" : "0.7.0",
+
    "x_contributors" : [
       "Jan Seidl <janseidl@volny.cz>",
       "Jan Seidl <seidl@avast.com>",
