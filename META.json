@@ -86,8 +86,8 @@
    "x_contributors" : [
       "Jan Seidl <janseidl@volny.cz>",
       "Jan Seidl <seidl@avast.com>",
-      "Rudolf Plíva <pliva@avast.com>",
-      "luckamohelnikova <mohelnikova@avast.com>"
+      "Mohelníková Lucie <mohelnikova@avast.com>",
+      "Rudolf Plíva <pliva@avast.com>"
    ],
    "x_serialization_backend" : "JSON::PP version 2.27300_01"
 }

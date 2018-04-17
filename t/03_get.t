@@ -30,6 +30,8 @@ my $statsite = qclass(
     -implement => 'Net::Statsite::Client',
     -with_new  => 1,
     increment  => 1,
+    update     => 1,
+    timing     => 1,
 );
 
 my $headers = qclass(
