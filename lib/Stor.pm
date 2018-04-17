@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.7.0';
+our $VERSION = '0.7.1';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -96,9 +96,11 @@ sub get_from_hcp ($self, $c, $sha) {
         return 0;
     }
 
-    $c->res->headers->content_length($resp->{content_length});
+    my $size = $resp->{content_length};
+    $c->res->headers->content_length($size);
     $c->res->headers->last_modified($resp->{'last-modified'});
 
+    my $time = time;
     my $count;
     $self->bucket->get_key_filename(
         $hcp_key, 'GET',
@@ -108,6 +110,8 @@ sub get_from_hcp ($self, $c, $sha) {
         }
     );
     $self->statsite->increment('success.get.ok_hcp.count');
+    $self->statsite->update('success.get.ok_hcp.size', $size);
+    $self->statsite->timing('success.get.ok_hcp.time', (time - $time) / 1000);
     return 1;
 }
 
@@ -120,7 +124,7 @@ sub get ($self, $c) {
         }) if $sha !~ /^[A-Fa-f0-9]{64}$/;
 
 
-        if (!$self->use_get_from_hcp || $self->get_from_hcp($c, $sha)) {
+        if (!$self->use_get_from_hcp || !$self->get_from_hcp($c, $sha)) {
             $self->get_from_old_storages($c, $sha);
             #when you remove calling this function, add failure::stor::filenotfound
         }
@@ -292,8 +296,8 @@ sub _stream_found_file($self, $c, $path) {
         }
 
         $c->write($chunk, $drain);
-        $self->statsite->update('success.get.ok.size', $size);
-        $self->statsite->timing('success.get.ok.time', (time - $tm_chunk) / 1000);
+        $self->statsite->update('success.get.ok_old.size', $size);
+        $self->statsite->timing('success.get.ok_old.time', (time - $tm_chunk) / 1000);
     };
     $c->$drain;
 }

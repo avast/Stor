@@ -82,13 +82,12 @@
          "web" : "https://github.com/avast/Stor"
       }
    },
-   "version" : "0.7.0",
-
+   "version" : "0.7.1",
    "x_contributors" : [
       "Jan Seidl <janseidl@volny.cz>",
       "Jan Seidl <seidl@avast.com>",
-      "Mohelníková Lucie <mohelnikova@avast.com>",
-      "Rudolf Plíva <pliva@avast.com>"
+      "Rudolf Plíva <pliva@avast.com>",
+      "luckamohelnikova <mohelnikova@avast.com>"
    ],
    "x_serialization_backend" : "JSON::PP version 2.27300_01"
 }
