@@ -9,6 +9,8 @@ use Net::Statsite::Client;
 
 use Stor;
 
+$ENV{MOJO_MAX_MESSAGE_SIZE} = 524288000;    #the size of message: 500 MB
+
 my $cfg = load_config();
 my $statsite = Net::Statsite::Client->new(%{ $cfg->{statsite} });
 
