@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.7.2';
+our $VERSION = '0.8.0';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;

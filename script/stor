@@ -32,6 +32,8 @@ app->plugin(
     }
 );
 
+app->config(hypnotoad => { clients => $ENV{HYPNOTOAD_CLIENTS} // 100 });
+
 get  '/'       => sub { $stor->about(@_)  };
 get  '/status' => sub { $stor->status(@_) };
 get  '/:sha'   => sub { $stor->get(@_)    };
