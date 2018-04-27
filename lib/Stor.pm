@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.8.0';
+our $VERSION = '0.8.1';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -290,7 +290,7 @@ sub _stream_found_file($self, $c, $path) {
         my $chunk;
         my $tm_chunk = time;
         my $size = read($fh, $chunk, 1024 * 1024);
-        if ($size == 0) {
+        if (!$size) {
             close($fh);
             $drain = undef;
         }
