@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.8.1';
+our $VERSION = '0.9.0';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -37,6 +37,7 @@ has 'bucket' => sub ($self) {
     );
     return $s3->bucket('samples');
 };
+has 'writable_pairs_regex' => '.*';
 
 sub about ($self, $c) {
     $c->render(status => 200, text => "This is " . __PACKAGE__ . " $VERSION");
@@ -228,14 +229,20 @@ sub pick_storage_pair_for_file ($self, $file) {
 }
 
 sub get_storages_free_space($self) {
-    my @free_space = map {min map {$self->get_storage_free_space($_)} @$_}
-                        @{$self->storage_pairs};
+    my @free_space = map {
+        min map { $self->get_storage_free_space($_) } @$_
+    } @{ $self->storage_pairs };
 
-    return \@free_space
+    return \@free_space;
 }
 
 sub get_storage_free_space($self, $storage) {
-    return int(qx(df --output=avail $storage | tail -n 1))
+    my $regex = $self->writable_pairs_regex;
+    if ($storage =~ /$regex/) {
+        return int(qx(df --output=avail $storage | tail -n 1))
+    }
+
+    return 0;
 }
 
 sub save_file ($self, $file, $sha, $storage_pair) {

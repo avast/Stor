@@ -20,6 +20,7 @@ my $stor = Stor->new(
     basic_auth       => $cfg->{basic_auth},
     hcp_credentials  => $cfg->{hcp_credentials},
     use_get_from_hcp => $cfg->{get_from_hcp},
+    read_only_regex  => $cfg->{read_only_regex}
 );
 
 app->plugin(
