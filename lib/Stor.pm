@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.10.0';
+our $VERSION = '0.10.1';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -116,7 +116,9 @@ sub get_from_hcp ($self, $c, $sha) {
     $tx->res->content->on(
         read => sub {
             my (undef, $chunk) = @_;
-            $c->write($chunk);
+            if ($chunk) {
+                $c->write($chunk);
+            }
         }
     );
 
