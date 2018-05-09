@@ -117,7 +117,8 @@ sub get_from_hcp ($self, $c, $sha) {
 
     $tx->res->content->on(
         read => sub {
-            $c->write($_[1]);
+            my (undef, $chunk) = @_;
+            $c->write($chunk);
         }
     );
 
