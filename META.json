@@ -10,7 +10,7 @@
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
-      "version" : "2"
+      "version" : 2
    },
    "name" : "Stor",
    "no_index" : {
@@ -91,5 +91,5 @@
       "Mohelníková Lucie <mohelnikova@avast.com>",
       "Rudolf Plíva <pliva@avast.com>"
    ],
-   "x_serialization_backend" : "JSON::PP version 2.27300_01"
+   "x_serialization_backend" : "JSON::PP version 2.94"
 }
