@@ -21,9 +21,7 @@ has 'storage_pairs';
 has 'statsite';
 has 'basic_auth';
 has 'hcp_credentials';
-has 'use_get_from_hcp' => sub {
-    return 0;
-};
+has 'use_get_from_hcp';
 has 'bucket' => sub ($self) {
     my $s3 = Net::Amazon::S3->new(
         {

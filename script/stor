@@ -20,7 +20,7 @@ my $stor = Stor->new(
     basic_auth           => $cfg->{basic_auth},
     hcp_credentials      => $cfg->{hcp_credentials},
     use_get_from_hcp     => $cfg->{get_from_hcp},
-    writable_pairs_regex => $cfg->{writable_pairs_regex}
+    writable_pairs_regex => $cfg->{writable_pairs_regex} // '.*',
 );
 
 app->plugin(

@@ -1,5 +1,5 @@
 requires 'perl', '5.022';
-requires 'Mojolicious';
+requires 'Mojolicious', '7.77';
 requires 'Path::Tiny';
 requires 'Syntax::Keyword::Try';
 requires 'List::MoreUtils';
