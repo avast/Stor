@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.10.0';
+our $VERSION = '0.10.2';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -60,7 +60,7 @@ sub status ($self, $c) {
 sub get_from_old_storages ($self, $c, $sha) {
     my $tm_cache = time;
     my $path     = $c->chi->get($sha);
-    $self->statsite->timing('cache.time', (time - $tm_cache) / 1000);
+    $self->statsite->timing('cache.time', (time - $tm_cache) * 1000);
     if ($path) {
         $self->statsite->increment('cache.hit');
     }
@@ -116,7 +116,9 @@ sub get_from_hcp ($self, $c, $sha) {
     $tx->res->content->on(
         read => sub {
             my (undef, $chunk) = @_;
-            $c->write($chunk);
+            if ($chunk) {
+                $c->write($chunk);
+            }
         }
     );
 
@@ -127,7 +129,7 @@ sub get_from_hcp ($self, $c, $sha) {
         sub {
             $self->statsite->increment('success.get.ok_hcp.count');
             $self->statsite->update('success.get.ok_hcp.size', $size);
-            $self->statsite->timing('success.get.ok_hcp.time', (time - $time) / 1000);
+            $self->statsite->timing('success.get.ok_hcp.time', (time - $time) * 1000);
         }
     );
 
@@ -279,7 +281,7 @@ sub _lookup ($self, $sha, $return_all_paths = '') {
     my $tm_start = time;
 
     scope_guard {
-        $self->statsite->timing('lookup.time', (time - $tm_start) / 1000);
+        $self->statsite->timing('lookup.time', (time - $tm_start) * 1000);
         $self->statsite->increment("lookup.attempt.$attempt.count");
     };
 
@@ -322,7 +324,7 @@ sub _stream_found_file($self, $c, $path) {
 
         $c->write($chunk, $drain);
         $self->statsite->update('success.get.ok_old.size', $size);
-        $self->statsite->timing('success.get.ok_old.time', (time - $tm_chunk) / 1000);
+        $self->statsite->timing('success.get.ok_old.time', (time - $tm_chunk) * 1000);
     };
     $c->$drain;
 }

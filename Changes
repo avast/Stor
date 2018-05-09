@@ -1,6 +1,10 @@
 Revision history for Perl extension Stor
 
 
+0.10.2
+    - Timings to statsite is now in miliseconds
+0.10.1
+    - Bugfix when zero-sized chunk is sent form hcp
 0.10.0
     - Properly streaming files form hcp storage
 0.9.0
