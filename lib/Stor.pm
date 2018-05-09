@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.9.0';
+our $VERSION = '0.10.0';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -91,28 +91,48 @@ sub get_from_old_storages ($self, $c, $sha) {
 sub get_from_hcp ($self, $c, $sha) {
     my $hcp_key = $self->_sha_to_filepath($sha);
 
-    my $resp = $self->bucket->get_key($hcp_key, 'HEAD');
-    if (!$resp) {
+    my $head_response = $self->bucket->get_key($hcp_key, 'HEAD');
+    if (!$head_response) {
         $self->statsite->increment('error.get.not_found_hcp.count');
         return 0;
     }
 
-    my $size = $resp->{content_length};
+    my $size = $head_response->{content_length};
     $c->res->headers->content_length($size);
-    $c->res->headers->last_modified($resp->{'last-modified'});
+    $c->res->headers->last_modified($head_response->{'last-modified'});
 
-    my $time = time;
-    my $count;
-    $self->bucket->get_key_filename(
-        $hcp_key, 'GET',
-        sub {
-            my ($chunk,) = @_;
+    # get classic HTTP::Request for fetching the file
+    my $http_request = Net::Amazon::S3::Request::GetObject->new(
+        s3     => $self->bucket->account,
+        bucket => $self->bucket->bucket,
+        key    => $hcp_key,
+        method => 'GET'
+    )->http_request;
+
+    # build Mojo request inside transaction for proper streaming
+    my $tx = $c->app->ua->build_tx(GET => $http_request->uri->as_string);
+    for my $header_key ('authorization', 'date') {
+        $tx->req->headers->header($header_key => $http_request->headers->header($header_key));
+    }
+
+    $tx->res->content->on(
+        read => sub {
+            my (undef, $chunk) = @_;
             $c->write($chunk);
         }
     );
-    $self->statsite->increment('success.get.ok_hcp.count');
-    $self->statsite->update('success.get.ok_hcp.size', $size);
-    $self->statsite->timing('success.get.ok_hcp.time', (time - $time) / 1000);
+
+    # start downloading
+    my $time = time;
+    $c->app->ua->start(
+        $tx,
+        sub {
+            $self->statsite->increment('success.get.ok_hcp.count');
+            $self->statsite->update('success.get.ok_hcp.size', $size);
+            $self->statsite->timing('success.get.ok_hcp.time', (time - $time) / 1000);
+        }
+    );
+
     return 1;
 }
 

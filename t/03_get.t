@@ -3,6 +3,8 @@ use Test::More 0.98;
 
 use Mock::Quick;
 use Path::Tiny;
+use HTTP::Request;
+use Test::Mojo;
 
 plan tests => 3;
 
@@ -13,9 +15,8 @@ my $bucket = qclass(
     get_key    => sub {
         return $response;
     },
-    get_key_filename => sub {
-        return;
-    },
+    account    => 1,
+    bucket     => 1
 );
 
 my $s3 = qclass(
@@ -23,6 +24,14 @@ my $s3 = qclass(
     new        => sub { return $_[0]; },
     bucket     => sub {
         return $bucket->package->new;
+    }
+);
+
+my $s3_request = qclass(
+    -implement   => 'Net::Amazon::S3::Request::GetObject',
+    -with_new    => 1,
+    http_request => sub {
+        return HTTP::Request->new(GET => "some_url");
     }
 );
 
@@ -55,6 +64,9 @@ my $c = qclass(
     res        => sub {
         return $res->package->new;
     },
+    app => sub {
+        return Test::Mojo->new();
+    }
 );
 
 use_ok('Stor');

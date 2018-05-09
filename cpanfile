@@ -19,6 +19,8 @@ on 'test' => sub {
     requires 'Test::Exception';
     requires 'Mock::Quick';
     requires 'Test::Mock::Cmd', '0.7';
+    requires 'HTTP::Request';
+    requires 'Test::Mojo';
 };
 
 on 'develop' => sub {

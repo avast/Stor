@@ -1,5 +1,8 @@
 Revision history for Perl extension Stor
 
+
+0.10.0
+    - Properly streaming files form hcp storage
 0.9.0
     - writable_pairs_regex configuration (default all pairs)
 0.6.0

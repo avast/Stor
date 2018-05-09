@@ -4,7 +4,7 @@
       "Miroslav Tynovsky <tynovsky@avast.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v3.0.12, CPAN::Meta::Converter version 2.150010",
+   "generated_by" : "Minilla/v3.0.17, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "perl_5"
    ],
@@ -63,9 +63,11 @@
       },
       "test" : {
          "requires" : {
+            "HTTP::Request" : "0",
             "Mock::Quick" : "0",
             "Test::Exception" : "0",
             "Test::Mock::Cmd" : "0.7",
+            "Test::Mojo" : "0",
             "Test::More" : "0.98"
          }
       }
@@ -82,7 +84,7 @@
          "web" : "https://github.com/avast/Stor"
       }
    },
-   "version" : "0.9.0",
+   "version" : "0.10.0",
    "x_contributors" : [
       "Jan Seidl <janseidl@volny.cz>",
       "Jan Seidl <seidl@avast.com>",
