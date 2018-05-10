@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/avast/Stor.svg?branch=master)](https://travis-ci.org/avast/Stor)
 # NAME
 
 Stor - Save/retrieve a file to/from primary storage
