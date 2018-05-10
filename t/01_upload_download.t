@@ -24,12 +24,12 @@ my $cfg = {
     ],
     secret          => 'test secret',
     basic_auth      => 'user:pass',
-    hcp_credentials => {
+    s3_credentials => {
         access_key => 'some_key',
         secret_key => 'another_key',
         host       => 'host',
     },
-    get_from_hcp   => 0,
+    s3_enabled => 0,
 };
 
 my $cfg_file = Path::Tiny->tempfile();

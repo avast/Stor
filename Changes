@@ -2,7 +2,10 @@ Revision history for Perl extension Stor
 
 
 {{$NEXT}}
-
+    - fix & improve documentation
+    - configuration changes:
+        - get_from_hcp renamed to s3_enabled
+        - hcp_credentials renamed to s3_credentials
 0.10.2 2018-05-10T14:20:30Z
     - Timings to statsite is now in miliseconds
 0.10.1
