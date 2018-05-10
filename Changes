@@ -1,7 +1,9 @@
 Revision history for Perl extension Stor
 
 
-0.10.2
+{{$NEXT}}
+
+0.10.2 2018-05-10T14:20:30Z
     - Timings to statsite is now in miliseconds
 0.10.1
     - Bugfix when zero-sized chunk is sent form hcp

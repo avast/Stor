@@ -29,3 +29,6 @@ cover_db/
 MYMETA.*
 
 /Stor-*
+
+.carmel/MySetup.pm
+cpanfile.snapshot
