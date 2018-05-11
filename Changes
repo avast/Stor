@@ -2,6 +2,8 @@ Revision history for Perl extension Stor
 
 
 {{$NEXT}}
+
+1.0.0 2018-05-11T09:08:33Z
     - fix & improve documentation
     - configuration changes:
         - get_from_hcp renamed to s3_enabled

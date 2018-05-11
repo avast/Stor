@@ -19,7 +19,7 @@ Stor is an HTTP API to primary storage. You provide a SHA256 hash and get the fi
 
 ### docker way
 
-    docker run -p $PWD/config.json.example:/etc/stor.conf -e CONFIG_FILE=/etc/stor.conf avastsoftware/stor:TAG
+    docker run -v $PWD/config.json.example:/etc/stor.conf -e CONFIG_FILE=/etc/stor.conf avastsoftware/stor:TAG
 
 ### perl way (development)
 
@@ -75,8 +75,6 @@ Headers:
 
     Content-Length - file size of file
     Last-Modified - last modification time
-
-GET return content of file in body
 
 #### 404 Not Found
 
