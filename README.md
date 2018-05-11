@@ -15,6 +15,48 @@ Stor - Save/retrieve a file to/from primary storage
 
 Stor is an HTTP API to primary storage. You provide a SHA256 hash and get the file contents, or you provide a SHA256 hash and a file contents and it gets stored to primary storages.
 
+## How to use?
+
+### docker way
+
+    docker run -p $PWD/config.json.example:/etc/stor.conf -e CONFIG_FILE=/etc/stor.conf avastsoftware/stor:TAG
+
+### perl way (development)
+
+    #local install dependency
+    carton install
+
+    #run
+    CONFIG_FILE=config.json.example carton exec perl -Ilib script/stor
+
+### perl way (production)
+
+we prefer [hypnotoad](https://mojolicious.org/perldoc/Mojo/Server/Hypnotoad) server
+
+## configuration example
+
+    {
+        "statsite": {                                                                 
+            "host": "STATSITE_HOST",                                       
+            "prefix": "stor.dev",
+            "sample_rate": 0.1
+        },  
+        "storage_pairs": [
+            ["/mnt/data1", "/mnt/data2"],
+            ["/mnt/data3", "/mnt/data4"]
+        ],
+        "writable_pairs_regex": "data[12]",
+        "s3_enabled" : true,
+        "s3_credentials" : {
+            "access_key" : "S3_ACCESS_KEY",
+            "secret_key" : "S3_SECRET_KEY",
+            "host" : "S3_HOST"
+        },
+        "memcached_servers": ["MEMCACHED_SERVER1"],
+        "secret": "https://mojolicious.org/perldoc/Mojolicious/Guides/FAQ#What-does-Your-secret-passphrase-needs-to-be-changed-mean",
+        "basic_auth": "writer:writer_pass"
+    } 
+
 ## Service Responsibility
 
 - provide HTTP API
@@ -25,6 +67,21 @@ Stor is an HTTP API to primary storage. You provide a SHA256 hash and get the fi
 
 ### HEAD /:sha
 
+#### 200 OK
+
+File exists
+
+Headers:
+
+    Content-Length - file size of file
+    Last-Modified - last modification time
+
+GET return content of file in body
+
+#### 404 Not Found
+
+Sample not found
+
 ### GET /:sha
 
 #### 200 OK
@@ -34,6 +91,7 @@ File exists
 Headers:
 
     Content-Length - file size of file
+    Last-Modified - last modification time
 
 GET return content of file in body
 
@@ -53,29 +111,9 @@ compare SHA and sha256 of file
 
 file exists
 
-Headers:
-
-Body:
-
-    {
-        "locations": {
-            "nfs":  ["server1:/some_path/to/file", "server2:/another_path/to/file"],
-            "cifs": ["\\\\server1\\share\\path\\to\\file", "\\\\server2\\share\\path\\to\\file"]
-        }
-    }
-
 #### 201 Created
 
 file was added to all storages
-
-Body:
-
-    {
-        "locations": {
-            "nfs":  ["server1:/some_path/to/file", "server2:/another_path/to/file"],
-            "cifs": ["\\\\server1\\share\\path\\to\\file", "\\\\server2\\share\\path\\to\\file"]
-        }
-    }
 
 #### 401 Unauthorized
 
@@ -89,10 +127,6 @@ content mismatch - sha256 of content not equal SHA
 
 There is not enough space on storage to save the file.
 
-Headers:
-
-    Content-Sha-256 - sha256 of content
-
 ### GET /status
 
 #### 200 OK
@@ -102,25 +136,6 @@ all storages are available
 #### 503
 
 some storage is unavailable
-
-### GET /storages
-
-return list of storages and disk usage
-
-## Redundancy Support
-
-for redundancy we need support defined n-tuple of storages
-
-n-tuple of storages must works minimal 1 for GET and all for POST
-
-pseudo-example of n-tuple of storages definition:
-
-    [
-        ["storage1", "storage2"],
-        ["storage3", "storage4"]
-    ]
-
-in pseudo-example case we must new sample save to storage1 and storage2 or storage3 and storage4
 
 ## Resource Allocation
 

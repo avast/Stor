@@ -71,9 +71,9 @@ my $c = qclass(
 
 use_ok('Stor');
 my $stor = Stor->new(
-    statsite        => $statsite->package->new,
-    basic_auth      => 'user:pass',
-    hcp_credentials => { host => 'host', user => 'some_user', pass => 'some_pass' },
+    statsite       => $statsite->package->new,
+    basic_auth     => 'user:pass',
+    s3_credentials => { host => 'host', user => 'some_user', pass => 'some_pass' },
 );
 
 subtest 'sha_transform' => sub {
@@ -90,15 +90,15 @@ subtest 'sha_transform' => sub {
     );
 };
 
-subtest 'get_from_hcp' => sub {
+subtest 'get_from_s3' => sub {
     my $sha = '557a65161f86c41c0672111dd7bdfc145b1068c6363596f8094af7d99106d16e';
-    my $resp = $stor->get_from_hcp($c->package->new, $sha);
-    ok(!$stor->get_from_hcp($c->package->new, $sha), 'file does not exist');
+    my $resp = $stor->get_from_s3($c->package->new, $sha);
+    ok(!$stor->get_from_s3($c->package->new, $sha), 'file does not exist');
 
     $response = {
         'content_length' => 42,
         'last-modified'  => 123456789,
     };
-    ok($stor->get_from_hcp($c->package->new, $sha), 'file was succesfully downloaded');
+    ok($stor->get_from_s3($c->package->new, $sha), 'file was succesfully downloaded');
 };
 

@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '0.10.2';
+our $VERSION = '1.0.0';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -20,14 +20,14 @@ use Net::Amazon::S3;
 has 'storage_pairs';
 has 'statsite';
 has 'basic_auth';
-has 'hcp_credentials';
-has 'use_get_from_hcp';
+has 's3_credentials';
+has 's3_enabled';
 has 'bucket' => sub ($self) {
     my $s3 = Net::Amazon::S3->new(
         {
-            aws_access_key_id     => $self->hcp_credentials->{access_key},
-            aws_secret_access_key => $self->hcp_credentials->{secret_key},
-            host                  => $self->hcp_credentials->{host},
+            aws_access_key_id     => $self->s3_credentials->{access_key},
+            aws_secret_access_key => $self->s3_credentials->{secret_key},
+            host                  => $self->s3_credentials->{host},
             secure                => 0,
             retry                 => 0,
             timeout               => 30
@@ -86,7 +86,7 @@ sub get_from_old_storages ($self, $c, $sha) {
     $self->statsite->increment('success.get.ok_old.count');
 }
 
-sub get_from_hcp ($self, $c, $sha) {
+sub get_from_s3 ($self, $c, $sha) {
     my $hcp_key = $self->_sha_to_filepath($sha);
 
     my $head_response = $self->bucket->get_key($hcp_key, 'HEAD');
@@ -145,7 +145,7 @@ sub get ($self, $c) {
         }) if $sha !~ /^[A-Fa-f0-9]{64}$/;
 
 
-        if (!$self->use_get_from_hcp || !$self->get_from_hcp($c, $sha)) {
+        if (!$self->s3_enabled || !$self->get_from_s3($c, $sha)) {
             $self->get_from_old_storages($c, $sha);
             #when you remove calling this function, add failure::stor::filenotfound
         }
@@ -364,6 +364,48 @@ Stor - Save/retrieve a file to/from primary storage
 
 Stor is an HTTP API to primary storage. You provide a SHA256 hash and get the file contents, or you provide a SHA256 hash and a file contents and it gets stored to primary storages.
 
+=head2 How to use?
+
+=head3 docker way
+
+    docker run -v $PWD/config.json.example:/etc/stor.conf -e CONFIG_FILE=/etc/stor.conf avastsoftware/stor:TAG
+
+=head3 perl way (development)
+
+    #local install dependency
+    carton install
+
+    #run
+    CONFIG_FILE=config.json.example carton exec perl -Ilib script/stor
+
+=head3 perl way (production)
+
+we prefer L<hypnotoad|https://mojolicious.org/perldoc/Mojo/Server/Hypnotoad> server
+
+=head2 configuration example
+
+    {
+        "statsite": {                                                                 
+            "host": "STATSITE_HOST",                                       
+            "prefix": "stor.dev",
+            "sample_rate": 0.1
+        },  
+        "storage_pairs": [
+            ["/mnt/data1", "/mnt/data2"],
+            ["/mnt/data3", "/mnt/data4"]
+        ],
+        "writable_pairs_regex": "data[12]",
+        "s3_enabled" : true,
+        "s3_credentials" : {
+            "access_key" : "S3_ACCESS_KEY",
+            "secret_key" : "S3_SECRET_KEY",
+            "host" : "S3_HOST"
+        },
+        "memcached_servers": ["MEMCACHED_SERVER1"],
+        "secret": "https://mojolicious.org/perldoc/Mojolicious/Guides/FAQ#What-does-Your-secret-passphrase-needs-to-be-changed-mean",
+        "basic_auth": "writer:writer_pass"
+    } 
+
 =head2 Service Responsibility
 
 =over
@@ -380,6 +422,19 @@ Stor is an HTTP API to primary storage. You provide a SHA256 hash and get the fi
 
 =head3 HEAD /:sha
 
+=head4 200 OK
+
+File exists
+
+Headers:
+
+    Content-Length - file size of file
+    Last-Modified - last modification time
+
+=head4 404 Not Found
+
+Sample not found
+
 =head3 GET /:sha
 
 =head4 200 OK
@@ -389,6 +444,7 @@ File exists
 Headers:
 
     Content-Length - file size of file
+    Last-Modified - last modification time
 
 GET return content of file in body
 
@@ -409,29 +465,9 @@ compare SHA and sha256 of file
 
 file exists
 
-Headers:
-
-Body:
-
-    {
-        "locations": {
-            "nfs":  ["server1:/some_path/to/file", "server2:/another_path/to/file"],
-            "cifs": ["\\\\server1\\share\\path\\to\\file", "\\\\server2\\share\\path\\to\\file"]
-        }
-    }
-
 =head4 201 Created
 
 file was added to all storages
-
-Body:
-
-    {
-        "locations": {
-            "nfs":  ["server1:/some_path/to/file", "server2:/another_path/to/file"],
-            "cifs": ["\\\\server1\\share\\path\\to\\file", "\\\\server2\\share\\path\\to\\file"]
-        }
-    }
 
 =head4 401 Unauthorized
 
@@ -445,10 +481,6 @@ content mismatch - sha256 of content not equal SHA
 
 There is not enough space on storage to save the file.
 
-Headers:
-
-    Content-Sha-256 - sha256 of content
-
 
 =head3 GET /status
 
@@ -460,31 +492,11 @@ all storages are available
 
 some storage is unavailable
 
-=head3 GET /storages
-
-return list of storages and disk usage
-
-=head2 Redundancy Support
-
-for redundancy we need support defined n-tuple of storages
-
-n-tuple of storages must works minimal 1 for GET and all for POST
-
-pseudo-example of n-tuple of storages definition:
-
-    [
-        ["storage1", "storage2"],
-        ["storage3", "storage4"]
-    ]
-
-in pseudo-example case we must new sample save to storage1 and storage2 or storage3 and storage4
-
 =head2 Resource Allocation
 
 save samples to n-tuple of storages with enough of resources => service responsibility is check disk usage
 
 nice to have is balanced samples to all storages equally
-
 
 
 =head1 LICENSE
@@ -499,4 +511,3 @@ it under the same terms as Perl itself.
 Miroslav Tynovsky E<lt>tynovsky@avast.comE<gt>
 
 =cut
-
