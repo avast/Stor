@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '1.0.0';
+our $VERSION = '1.0.1';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -138,6 +138,9 @@ sub get_from_s3 ($self, $c, $sha) {
 
 sub get ($self, $c) {
     my $sha = $c->param('sha');
+
+    $self->statsite->increment('request.get.count');
+
     try {
         failure::stor::filenotfound->throw({
             msg     => "Given hash '$sha' isn't SHA256",
@@ -159,8 +162,6 @@ sub get ($self, $c) {
             $self->statsite->increment('error.get.500.count');
             $c->render(status => 500, text => "$@");
         }
-    }
-    finally {
         if ($@->$_isa('failure::stor')) {
             $self->statsite->increment($@->payload->{statsite_key});
         }
@@ -169,6 +170,8 @@ sub get ($self, $c) {
 
 sub post ($self, $c) {
     my $sha  = $c->param('sha');
+
+    $self->statsite->increment('request.post.count');
 
     if ($sha !~ /^[A-Fa-f0-9]{64}$/) {
         $self->statsite->increment('error.post.malformed_sha.count');
