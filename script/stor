@@ -6,6 +6,8 @@ use Mojolicious::Lite;
 use Mojo::JSON qw(decode_json);
 use Path::Tiny;
 use Net::Statsite::Client;
+use Log::Dispatch;
+use MojoX::Log::Dispatch::Simple;
 
 use Stor;
 
@@ -14,6 +16,11 @@ $ENV{MOJO_MAX_MESSAGE_SIZE} = 524288000;    #the size of message: 500 MB
 my $cfg = load_config();
 my $statsite = Net::Statsite::Client->new(%{ $cfg->{statsite} });
 
+my $logger = MojoX::Log::Dispatch::Simple->new(
+    dispatch => Log::Dispatch->new(outputs => $cfg->{logger}),
+    level    => 'debug'
+);
+
 my $stor = Stor->new(
     storage_pairs        => $cfg->{storage_pairs},
     statsite             => $statsite,
@@ -21,6 +28,7 @@ my $stor = Stor->new(
     s3_credentials       => $cfg->{s3_credentials},
     s3_enabled           => $cfg->{s3_enabled},
     writable_pairs_regex => $cfg->{writable_pairs_regex} // '.*',
+    logger               => $logger,
 );
 
 app->plugin(
@@ -50,3 +58,4 @@ sub load_config {
 
     return decode_json(path($ENV{CONFIG_FILE})->slurp())
 }
+
