@@ -17,7 +17,7 @@ my $cfg = load_config();
 my $statsite = Net::Statsite::Client->new(%{ $cfg->{statsite} });
 
 my $logger = MojoX::Log::Dispatch::Simple->new(
-    dispatch => Log::Dispatch->new(outputs => $cfg->{logger}),
+    dispatch => Log::Dispatch->new(outputs => $cfg->{log}),
     level    => 'debug'
 );
 
@@ -28,7 +28,6 @@ my $stor = Stor->new(
     s3_credentials       => $cfg->{s3_credentials},
     s3_enabled           => $cfg->{s3_enabled},
     writable_pairs_regex => $cfg->{writable_pairs_regex} // '.*',
-    logger               => $logger,
 );
 
 app->plugin(
@@ -42,6 +41,8 @@ app->plugin(
 );
 
 app->config(hypnotoad => { clients => $ENV{HYPNOTOAD_CLIENTS} // 100 });
+app->log($logger);
+
 
 get  '/'       => sub { $stor->about(@_)  };
 get  '/status' => sub { $stor->status(@_) };
