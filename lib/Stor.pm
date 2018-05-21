@@ -121,7 +121,7 @@ sub get_from_s3 ($self, $c, $sha) {
                     $c->write($chunk);
                 }
                 catch{
-                    $c->app->log->warning('Writing chunk failed: $@');
+                    $c->app->log->warning("Writing chunk failed: $@");
                     $tx->res->content->unsubscribe('read');
                 }
             }
