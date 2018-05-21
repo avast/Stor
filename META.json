@@ -50,6 +50,8 @@
             "Guard" : "1.023",
             "HTTP::Date" : "6.02",
             "List::MoreUtils" : "0",
+            "Log::Dispatch" : "0",
+            "MojoX::Log::Dispatch::Simple" : "0",
             "Mojolicious" : "7.77",
             "Mojolicious::Plugin::CHI" : "0.09",
             "Net::Amazon::S3" : "0",

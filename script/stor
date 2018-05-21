@@ -8,6 +8,8 @@ use Net::Statsite::Client;
 use Mojo::File qw(path);
 use File::Spec;
 use File::stat;
+use Log::Dispatch;
+use MojoX::Log::Dispatch::Simple;
 
 use Stor;
 
@@ -15,6 +17,11 @@ $ENV{MOJO_MAX_MESSAGE_SIZE} = 524288000;    #the size of message: 500 MB
 
 my $cfg      = load_config();
 my $statsite = Net::Statsite::Client->new(%{ $cfg->{statsite} });
+
+my $logger = MojoX::Log::Dispatch::Simple->new(
+    dispatch => Log::Dispatch->new(outputs => $cfg->{log}),
+    level    => 'debug'
+);
 
 my $stor = Stor->new(
     storage_pairs        => $cfg->{storage_pairs},
@@ -36,6 +43,8 @@ app->plugin(
 );
 
 app->config(hypnotoad => { clients => $ENV{HYPNOTOAD_CLIENTS} // 100 });
+app->log($logger);
+
 
 start_cleanup_tempdir_task();
 
@@ -67,3 +76,4 @@ sub start_cleanup_tempdir_task {
         }
     );
 }
+
