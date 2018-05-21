@@ -14,6 +14,7 @@ requires 'Cache::Memcached::Fast', '0.25';
 requires 'HTTP::Date', '6.02';
 requires 'Net::Amazon::S3';
 requires 'Log::Dispatch';
+requires 'Log::Dispatch::Gelf';
 requires 'MojoX::Log::Dispatch::Simple';
 
 on 'test' => sub {
