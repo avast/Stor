@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '1.1.0';
+our $VERSION = '1.1.1';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -328,20 +328,21 @@ sub _sha_to_filepath($self, $sha) {
 
 sub _stream_found_file($self, $c, $path) {
     my $fh = $path->openr_raw();
+    my $time = time;
+    my $total_size = 0;
     my $drain; $drain = sub {
         my ($c) = @_;
 
         my $chunk;
-        my $tm_chunk = time;
         my $size = read($fh, $chunk, 1024 * 1024);
+        $total_size += $size;
         if (!$size) {
             close($fh);
             $drain = undef;
+            $self->statsite->update('success.get.ok_old.size', $total_size);
+            $self->statsite->timing('success.get.ok_old.time', (time - $time) * 1000);
         }
-
         $c->write($chunk, $drain);
-        $self->statsite->update('success.get.ok_old.size', $size);
-        $self->statsite->timing('success.get.ok_old.time', (time - $tm_chunk) * 1000);
     };
     $c->$drain;
 }
