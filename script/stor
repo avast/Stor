@@ -70,7 +70,7 @@ sub start_cleanup_tempdir_task {
         $cleanup_tempdir_period => sub {
             path(File::Spec->tmpdir)
               ->list()
-              ->grep(sub { $_->basename =~ /^mojo_/ })
+              ->grep(sub { $_->basename =~ /^mojo\.tmp/ })
               ->grep(sub { stat($_)->mtime < (time - $cleanup_tempdir_period)})
               ->each(sub { $_->remove_tree });
         }
