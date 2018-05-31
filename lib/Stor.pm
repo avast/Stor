@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '1.1.2';
+our $VERSION = '1.1.3';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -108,6 +108,7 @@ sub get_from_s3 ($self, $c, $sha) {
     )->http_request;
 
     # build Mojo request inside transaction for proper streaming
+    $c->app->ua->max_response_size(0);
     my $tx = $c->app->ua->build_tx(GET => $http_request->uri->as_string);
     for my $header_key ('authorization', 'date') {
         $tx->req->headers->header($header_key => $http_request->headers->header($header_key));

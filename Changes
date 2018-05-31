@@ -2,9 +2,11 @@ Revision history for Perl extension Stor
 
 
 {{$NEXT}}
+    - S3bug: Bigger samples then 503MB wasn't downloaded, becuase default user agent limit. Now is limit unlimited (because file is streamed)
+1.1.2
     - Recurring cleanup task for old mojo temp files
 1.1.0
-	- Added logging
+    - Added logging
 1.0.0 2018-05-11T09:08:33Z
     - fix & improve documentation
     - configuration changes:
