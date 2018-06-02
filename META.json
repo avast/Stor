@@ -4,13 +4,13 @@
       "Miroslav Tynovsky <tynovsky@avast.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v3.0.12, CPAN::Meta::Converter version 2.150010",
+   "generated_by" : "Minilla/v3.0.17, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "perl_5"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
-      "version" : 2
+      "version" : "2"
    },
    "name" : "Stor",
    "no_index" : {
@@ -88,7 +88,7 @@
          "web" : "https://github.com/avast/Stor"
       }
    },
-   "version" : "1.1.4",
+   "version" : "1.2.0",
    "x_contributors" : [
       "Jan Seidl <janseidl@volny.cz>",
       "Jan Seidl <seidl@avast.com>",
@@ -97,5 +97,5 @@
       "Tomas Pavlik <savlik5@gmail.com>",
       "Tomas Pavlik <tomas.pavlik@avast.com>"
    ],
-   "x_serialization_backend" : "JSON::PP version 2.94"
+   "x_serialization_backend" : "JSON::PP version 2.27300_01"
 }
