@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '1.1.4';
+our $VERSION = '1.2.0';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -67,12 +67,7 @@ sub get_from_old_storages ($self, $c, $sha) {
     else {
         $self->statsite->increment('cache.miss');
         my $paths = $self->_lookup($sha);
-        failure::stor::filenotfound->throw(
-            {
-                msg     => "File '$sha' not found",
-                payload => { statsite_key => 'error.get.not_found_old.count' },
-            }
-        ) if !@$paths;
+        return 0 if !@$paths;
 
         $path = $paths->[0];
         $c->chi->set($sha => $path);
@@ -84,6 +79,7 @@ sub get_from_old_storages ($self, $c, $sha) {
 
     $self->_stream_found_file($c, $path);
     $self->statsite->increment('success.get.ok_old.count');
+    return 1;
 }
 
 sub get_from_s3 ($self, $c, $sha) {
@@ -154,10 +150,22 @@ sub get ($self, $c) {
             payload => { statsite_key => 'error.get.malformed_sha.count' },
         }) if $sha !~ /^[A-Fa-f0-9]{64}$/;
 
+        my $found = 0;
+        if($self->get_from_old_storages($c, $sha)){
+            $found = 1;
+        } else {
+            if($self->s3_enabled && $self->get_from_s3($c, $sha)) {
+                $found = 1;
+            }
+        }
 
-        if (!$self->s3_enabled || !$self->get_from_s3($c, $sha)) {
-            $self->get_from_old_storages($c, $sha);
-            #when you remove calling this function, add failure::stor::filenotfound
+        if (!$found) {
+            failure::stor::filenotfound->throw(
+                {
+                    msg     => "File '$sha' not found",
+                    payload => { statsite_key => 'error.get.not_found_old.count' },
+                }
+            )
         }
     }
     catch {
