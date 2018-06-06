@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '1.2.0';
+our $VERSION = '1.3.0';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -77,8 +77,10 @@ sub get_from_old_storages ($self, $c, $sha) {
     $c->res->headers->content_length($path_stat->size);
     $c->res->headers->last_modified(time2str($path_stat->mtime));
 
-    $self->_stream_found_file($c, $path);
-    $self->statsite->increment('success.get.ok_old.count');
+    my $server_name = $self->_get_server_name_from_path($path, $sha);
+
+    $self->_stream_found_file($c, $path, $server_name);
+    $self->statsite->increment("success.get.ok_old.$server_name.count");
     return 1;
 }
 
@@ -334,8 +336,17 @@ sub _sha_to_filepath($self, $sha) {
     return join '/', @subdir, $filename
 }
 
+sub _get_server_name_from_path ($self, $path, $sha) {
+    my $file_path = $self->_path_with_dat($sha);
 
-sub _stream_found_file($self, $c, $path) {
+    $path =~ s/$file_path//g;
+    $path =~ s/[^a-zA-Z0-9]/-/g;
+    $path =~ s/(^-+|-+$)//g;
+
+    return $path;
+}
+
+sub _stream_found_file($self, $c, $path, $server_name) {
     my $fh = $path->openr_raw();
     my $time = time;
     my $total_size = 0;
@@ -348,8 +359,8 @@ sub _stream_found_file($self, $c, $path) {
         if (!$size) {
             close($fh);
             $drain = undef;
-            $self->statsite->update('success.get.ok_old.size', $total_size);
-            $self->statsite->timing('success.get.ok_old.time', (time - $time) * 1000);
+            $self->statsite->update("success.get.ok_old.$server_name.size", $total_size);
+            $self->statsite->timing("success.get.ok_old.$server_name.time", (time - $time) * 1000);
         }
         $c->write($chunk, $drain);
     };
