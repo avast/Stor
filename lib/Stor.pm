@@ -341,6 +341,7 @@ sub _get_server_name_from_path ($self, $path, $sha) {
 
     $path =~ s/$file_path//g;
     $path =~ s/[^a-zA-Z0-9]/-/g;
+    $path =~ s/(^-+|-+$)//g;
 
     return $path;
 }
