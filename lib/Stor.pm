@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '1.3.0';
+our $VERSION = '1.4.0';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -153,12 +153,11 @@ sub get ($self, $c) {
         }) if $sha !~ /^[A-Fa-f0-9]{64}$/;
 
         my $found = 0;
-        if($self->get_from_old_storages($c, $sha)){
+        if ($self->s3_enabled && $self->get_from_s3($c, $sha)) {
             $found = 1;
-        } else {
-            if($self->s3_enabled && $self->get_from_s3($c, $sha)) {
-                $found = 1;
-            }
+        }
+        elsif ($self->get_from_old_storages($c, $sha)) {
+            $found = 1;
         }
 
         if (!$found) {
