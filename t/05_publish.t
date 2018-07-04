@@ -51,11 +51,9 @@ subtest 'get with publish' => sub {
             [ $storages[0]->stringify(), $storages[1]->stringify(), ],
             [ $storages[2]->stringify(), $storages[3]->stringify(), ],
         ],
-        rmq_publisher => qobj(
-            publish => qmeth {
-                is($_[1], $sha, 'publish')
-            }
-        ),
+        rmq_publish_code => sub {
+            is($_[0], $sha, 'publish');
+        }
     );
 
     my %render;
