@@ -1,7 +1,7 @@
 package Stor;
 use v5.20;
 
-our $VERSION = '1.5.0';
+our $VERSION = '1.5.1';
 
 use Mojo::Base -base, -signatures;
 use Syntax::Keyword::Try;
@@ -36,7 +36,7 @@ has 'bucket' => sub ($self) {
     return $s3->bucket('samples');
 };
 has 'writable_pairs_regex' => '.*';
-has 'rmq_publisher';
+has 'rmq_publish_code';
 
 sub about ($self, $c) {
     $c->render(status => 200, text => "This is " . __PACKAGE__ . " $VERSION");
@@ -153,8 +153,8 @@ sub get ($self, $c) {
             payload => { statsite_key => 'error.get.malformed_sha.count' },
         }) if $sha !~ /^[A-Fa-f0-9]{64}$/;
 
-        if (defined $self->rmq_publisher && $self->rmq_publisher->can('publish')) {
-            $self->rmq_publisher->publish($sha);
+        if (ref $self->rmq_publish_code eq 'CODE')  {
+            $self->rmq_publish_code->($sha);
         }
 
         my $found = 0;
