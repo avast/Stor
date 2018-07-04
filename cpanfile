@@ -16,6 +16,7 @@ requires 'Net::Amazon::S3';
 requires 'Log::Dispatch';
 requires 'Log::Dispatch::Gelf';
 requires 'MojoX::Log::Dispatch::Simple';
+requires 'Mojo::RabbitMQ::Client', '0.1.0';
 
 on 'test' => sub {
     requires 'Test::More', '0.98';

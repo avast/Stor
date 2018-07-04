@@ -4,13 +4,13 @@
       "Miroslav Tynovsky <tynovsky@avast.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v3.0.16, CPAN::Meta::Converter version 2.150010",
+   "generated_by" : "Minilla/v3.0.12, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "perl_5"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
-      "version" : "2"
+      "version" : 2
    },
    "name" : "Stor",
    "no_index" : {
@@ -52,6 +52,7 @@
             "List::MoreUtils" : "0",
             "Log::Dispatch" : "0",
             "Log::Dispatch::Gelf" : "0",
+            "Mojo::RabbitMQ::Client" : "v0.1.0",
             "MojoX::Log::Dispatch::Simple" : "0",
             "Mojolicious" : "7.77",
             "Mojolicious::Plugin::CHI" : "0.09",
@@ -88,14 +89,14 @@
          "web" : "https://github.com/avast/Stor"
       }
    },
-   "version" : "1.4.0",
+   "version" : "1.5.0",
    "x_contributors" : [
       "Jan Seidl <janseidl@volny.cz>",
       "Jan Seidl <seidl@avast.com>",
-      "Mohelníková Lucie <mohelnikova@avast.com>",
       "Rudolf Plíva <pliva@avast.com>",
       "Tomas Pavlik <savlik5@gmail.com>",
-      "Tomas Pavlik <tomas.pavlik@avast.com>"
+      "Tomas Pavlik <tomas.pavlik@avast.com>",
+      "luckamohelnikova <mohelnikova@avast.com>"
    ],
-   "x_serialization_backend" : "JSON::PP version 2.27300_01"
+   "x_serialization_backend" : "JSON::PP version 2.94"
 }
