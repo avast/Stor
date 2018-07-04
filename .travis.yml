@@ -1,4 +1,7 @@
 language: perl
+cache:
+  directories:
+    - $HOME/perl5
 sudo: false
 perl:
   - "5.20"
