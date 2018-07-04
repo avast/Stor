@@ -10,6 +10,7 @@ use File::Spec;
 use File::stat;
 use Log::Dispatch;
 use MojoX::Log::Dispatch::Simple;
+use Mojo::RabbitMQ::Client;
 
 use Stor;
 
@@ -23,6 +24,13 @@ my $logger = MojoX::Log::Dispatch::Simple->new(
     level    => 'debug'
 );
 
+my $rmq_publisher;
+if ($cfg->{rabbitmq_uri}) {
+    $rmq_publisher = Mojo::RabbitMQ::Client->publisher(
+        url => $cfg->{rabbitmq_uri}
+    );
+}
+
 my $stor = Stor->new(
     storage_pairs        => $cfg->{storage_pairs},
     statsite             => $statsite,
@@ -30,6 +38,7 @@ my $stor = Stor->new(
     s3_credentials       => $cfg->{s3_credentials},
     s3_enabled           => $cfg->{s3_enabled},
     writable_pairs_regex => $cfg->{writable_pairs_regex} // '.*',
+    rmq_publisher        => $rmq_publisher,
 );
 
 app->plugin(
@@ -44,7 +53,6 @@ app->plugin(
 
 app->config(hypnotoad => { clients => $ENV{HYPNOTOAD_CLIENTS} // 100 });
 app->log($logger);
-
 
 start_cleanup_tempdir_task();
 

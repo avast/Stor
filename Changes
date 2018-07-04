@@ -2,7 +2,7 @@ Revision history for Perl extension Stor
 
 
 {{$NEXT}}
-
+    - add optional rabbitmq SHA publisher
 1.1.4 2018-05-31T12:09:37Z
     - system perl in test fix
     - used (not empty) port in test fix
