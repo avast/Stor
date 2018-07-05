@@ -5,6 +5,7 @@ use Mojo::Base -base, -signatures;
 use Net::AMQP::RabbitMQ;
 use URI;
 use Mojo::IOLoop;
+use Try::Tiny::Retry ':all';
 
 =head1 NAME
 
@@ -80,6 +81,8 @@ has 'rmq' => sub {
 
 has 'channel' => 1;
 
+has 'log';
+
 =head2 create()
 
 create new publisher (code)
@@ -95,7 +98,29 @@ sub create ($self) {
     $self->rmq->exchange_declare($self->channel, $self->exchange, {exchange_type => 'topic', durable => 1,});
 
     return sub ($sha) {
-        $self->rmq->publish($self->channel, $self->routing_key, $sha, { exchange => $self->exchange });
+        retry {
+            $self->rmq->publish($self->channel, $self->routing_key, $sha, { exchange => $self->exchange });
+        }
+        delay_exp {2, 1e5}
+        on_retry {
+            try {
+                $self->rmq->disconnect();
+            }
+            catch {
+                $self->log->debug("disconnect $_");
+            };
+
+            try {
+                $self->rmq->connect($self->amqp_uri->as_net_amqp_rabbitmq);
+                $self->rmq->channel_open($self->channel);
+            }
+            catch {
+                $self->log->debug("connect/channel_open $_");
+            };
+        }
+        catch {
+            $self->log->error($_);
+        };
     };
 }
 
@@ -111,7 +136,6 @@ sub create_mojo_heartbeat ($self) {
             $self->rmq->heartbeat();
         }
     );
-
 }
 
 =head1 contributing
