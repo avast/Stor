@@ -24,7 +24,10 @@ my $logger = MojoX::Log::Dispatch::Simple->new(
     level    => 'debug'
 );
 
-my $rmq_factory = RmqPublishFactory->new(uri => $cfg->{rabbitmq_uri});
+my $rmq_factory = RmqPublishFactory->new(
+    uri => $cfg->{rabbitmq_uri},
+    log => $logger,
+);
 
 $rmq_factory->create_mojo_heartbeat();
 

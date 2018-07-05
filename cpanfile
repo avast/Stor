@@ -18,6 +18,7 @@ requires 'Log::Dispatch::Gelf';
 requires 'MojoX::Log::Dispatch::Simple';
 requires 'Net::AMQP::RabbitMQ', '2.3';
 requires 'URI::amqp', '0.1.3';
+requires 'Try::Tiny::Retry';
 
 on 'test' => sub {
     requires 'Test::More', '0.98';

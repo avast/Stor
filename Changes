@@ -2,7 +2,13 @@ Revision history for Perl extension Stor
 
 
 {{$NEXT}}
-
+1.4.2
+    - rmq publish don't break stor if rmq are unavailable
+    - rmq reconnect
+1.4.1
+    - use Net::AMQP::RabbitMQ instead of Mojo::RabbitMQ::Client (good enough for our use-case)
+    - refactor rmq functionality to RmqPublishFactory (+tests)
+    - reccurent timer for heartbeat
 1.4.0 2018-07-04T14:47:28Z
     - add optional rabbitmq SHA publisher
 1.1.4 2018-05-31T12:09:37Z
