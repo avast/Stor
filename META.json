@@ -61,6 +61,7 @@
             "Path::Tiny" : "0",
             "Safe::Isa" : "0",
             "Syntax::Keyword::Try" : "0",
+            "Try::Tiny::Retry" : "0",
             "URI::amqp" : "v0.1.3",
             "failures" : "0",
             "perl" : "v5.20.0"
@@ -99,5 +100,5 @@
       "Tomas Pavlik <tomas.pavlik@avast.com>",
       "luckamohelnikova <mohelnikova@avast.com>"
    ],
-   "x_serialization_backend" : "JSON::PP version 2.94"
+   "x_serialization_backend" : "JSON::PP version 2.97001"
 }

@@ -2,7 +2,8 @@ Revision history for Perl extension Stor
 
 
 {{$NEXT}}
-1.4.2
+
+1.5.2 2018-09-13T11:29:44Z
     - rmq publish don't break stor if rmq are unavailable
     - rmq reconnect
 1.4.1
